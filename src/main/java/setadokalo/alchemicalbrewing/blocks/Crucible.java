@@ -1,25 +1,31 @@
 package setadokalo.alchemicalbrewing.blocks;
 
+import java.util.Random;
+
+import org.jetbrains.annotations.Nullable;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BannerBlockEntity;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Material;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.IntProperty;
-import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.function.BooleanBiFunction;
@@ -29,14 +35,8 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.Nullable;
-import setadokalo.alchemicalbrewing.AlchemicalBrewing;
-import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 
-import java.util.Objects;
-import java.util.PropertyPermission;
-import java.util.Random;
+import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 
 public class Crucible extends Block implements BlockEntityProvider {
 	protected final ParticleEffect particle = ParticleTypes.BUBBLE_COLUMN_UP;

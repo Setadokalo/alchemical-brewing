@@ -1,12 +1,11 @@
 package setadokalo.alchemicalbrewing.blocks.tileentity;
 
-import net.minecraft.block.AbstractFurnaceBlock;
-import net.minecraft.block.BlockState;
+import org.apache.logging.log4j.Level;
+
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.screen.PropertyDelegate;
 import net.minecraft.util.Tickable;
-import org.apache.logging.log4j.Level;
+
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 
