@@ -2,6 +2,7 @@ package setadokalo.alchemicalbrewing.blocks;
 
 import java.util.Random;
 
+import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.api.EnvType;
@@ -35,7 +36,7 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-
+import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 
 public class Crucible extends Block implements BlockEntityProvider {
@@ -54,7 +55,7 @@ public class Crucible extends Block implements BlockEntityProvider {
 
 
 	public static final BooleanProperty READY = BooleanProperty.of("ready");
-	public static final IntProperty LEVEL = IntProperty.of("level", 0, 8);
+	public static final IntProperty LEVEL = IntProperty.of("level", 0, 9);
 
 
 	public Crucible() {
@@ -64,30 +65,34 @@ public class Crucible extends Block implements BlockEntityProvider {
 
 	@Override
 	public @Nullable BlockEntity createBlockEntity(BlockView world) {
-		return new CrucibleEntity(8);
+		return new CrucibleEntity(9, 16);
 	}
 
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		ItemStack itemStack = player.getStackInHand(hand);
+		CrucibleEntity entity = (CrucibleEntity) world.getBlockEntity(pos);
 		if (itemStack.isEmpty()) {
+			if (player.isSneaking()) {
+				entity.emptyPot();
+			}
 			return ActionResult.PASS;
 		} else {
-			CrucibleEntity entity = (CrucibleEntity) world.getBlockEntity(pos);
 			int i = entity.getLevel();
 			Item item = itemStack.getItem();
-			if (item == Items.WATER_BUCKET) {
-				if (i < entity.MAX_CAPACITY && !world.isClient) {
+			if (item == Items.WATER_BUCKET && i < entity.MAX_WATER_CAPACITY) {
+				if (!world.isClient) {
 					if (!player.abilities.creativeMode) {
 						player.setStackInHand(hand, new ItemStack(Items.BUCKET));
 					}
 
-					entity.addLevels(8, true);
-					world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
+					entity.addLevels(9, true);
+					world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F,
+							1.0F);
 				}
 
 				return ActionResult.success(world.isClient);
 			} else if (item == Items.POTION && PotionUtil.getPotion(itemStack) == Potions.WATER) {
-				if (i < entity.MAX_CAPACITY && !world.isClient) {
+				if (i < entity.MAX_WATER_CAPACITY && !world.isClient) {
 					if (!player.abilities.creativeMode) {
 						player.setStackInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
 					}
@@ -98,7 +103,7 @@ public class Crucible extends Block implements BlockEntityProvider {
 
 				return ActionResult.success(world.isClient);
 			} else if (item == Items.BUCKET) {
-				if (i >= 8 && !world.isClient) {
+				if (i >= 9 && !world.isClient) {
 					if (!player.abilities.creativeMode) {
 						itemStack.decrement(1);
 						if (itemStack.isEmpty()) {
@@ -109,7 +114,7 @@ public class Crucible extends Block implements BlockEntityProvider {
 							player.dropItem(new ItemStack(Items.WATER_BUCKET), false);
 						}
 					}
-					entity.takeLevels(8, true);
+					entity.takeLevels(9, true);
 					world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
 				}
 
@@ -120,9 +125,9 @@ public class Crucible extends Block implements BlockEntityProvider {
 						itemStack.decrement(1);
 						if (itemStack.isEmpty()) {
 							if (entity.isPureWater()) {
-								player.setStackInHand(hand, new ItemStack(Items.WATER_BUCKET));
+								player.setStackInHand(hand, PotionUtil.setPotion(new ItemStack(Items.POTION), Potions.WATER));
 							}
-						} else if (!player.inventory.insertStack(new ItemStack(Items.WATER_BUCKET))) {
+						} else if (!player.inventory.insertStack(PotionUtil.setPotion(new ItemStack(Items.POTION), Potions.WATER))) {
 							player.dropItem(Items.POTION.getDefaultStack(), false);
 						}
 					}
@@ -132,7 +137,15 @@ public class Crucible extends Block implements BlockEntityProvider {
 
 				return ActionResult.success(world.isClient);
 			} else {
-				return ActionResult.PASS;
+				if (!world.isClient) {
+					ItemStack borrowedStack = itemStack.copy();
+					borrowedStack.setCount(1);
+					if (entity.addItem(itemStack)) {
+						if (!player.abilities.creativeMode)
+							itemStack.decrement(1);
+					}
+				}
+				return ActionResult.SUCCESS;
 			}
 		}
 	}
@@ -155,7 +168,7 @@ public class Crucible extends Block implements BlockEntityProvider {
 		CrucibleEntity entity = (CrucibleEntity) world.getBlockEntity(pos);
 		assert entity != null;
 		if (state.get(READY)) {
-			double surface = ((double)state.get(LEVEL)) / 8.0 + 0.2;
+			double surface = ((double)state.get(LEVEL)) / 16.0 + 0.4;
 			double d = (double)pos.getX() + 0.5D + (random.nextDouble() - 0.5D) * 0.8D;
 			double e = (double)pos.getY() + surface + (random.nextDouble() - 0.5D) * 0.15D;
 			double f = (double)pos.getZ() + 0.5D + (random.nextDouble() - 0.5D) * 0.8D;

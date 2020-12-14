@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "level=0,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible"
+    },
+    "level=0,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible"
+    },
+    "level=1,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level1"
+    },
+    "level=1,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level1"
+    },
+    "level=2,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level2"
+    },
+    "level=2,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level2"
+    },
+    "level=3,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level3"
+    },
+    "level=3,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level3"
+    },
+    "level=4,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level4"
+    },
+    "level=4,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level4"
+    },
+    "level=5,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level5"
+    },
+    "level=5,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level5"
+    },
+    "level=6,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level6"
+    },
+    "level=6,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level6"
+    },
+    "level=7,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level7"
+    },
+    "level=7,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level7"
+    },
+    "level=8,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level8"
+    },
+    "level=8,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level8"
+    },
+    "level=9,ready=true": {
+      "model": "alchemicalbrewing:block/stone_crucible_level9"
+    },
+    "level=9,ready=false": {
+      "model": "alchemicalbrewing:block/stone_crucible_level9"
+    }
+  }
+}

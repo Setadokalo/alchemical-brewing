@@ -1,9 +1,11 @@
 package setadokalo.alchemicalbrewing.blocks.tileentity;
 
+import java.util.LinkedList;
+
 import org.apache.logging.log4j.Level;
 
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.screen.PropertyDelegate;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Tickable;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
@@ -15,54 +17,24 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	private boolean wasReady = true;
 	private int ticksToReady = 0;
 	/** The maximum capacity of this crucible (allowing this one base class to be reused). */
-	public final int MAX_CAPACITY;
-	/** The current number of bottles of water in this crucible. One bucket = 8 bottles, because how TF does
+	public final int MAX_WATER_CAPACITY;
+	public final int MAX_INGREDIENT_CAPACITY;
+	/** The current number of bottles of water in this crucible. One bucket = 9 bottles, because how TF does
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
 	private int level = 0;
+	private LinkedList<ItemStack> itemsInPot = new LinkedList<>();
 
-	private final PropertyDelegate propertyDelegate = new PropertyDelegate() {
-		@Override
-		public int get(int index) {
-			switch (index) {
-				case 0:
-					return level;
-				case 1:
-					return ticksToReady;
-				default:
-					throw new IllegalArgumentException();
-			}
-		}
-
-		@Override
-		public void set(int index, int value) {
-			switch (index) {
-				case 0:
-					level = value;
-					break;
-				case 1:
-					ticksToReady = value;
-					break;
-				default:
-					throw new IllegalArgumentException();
-			}
-		}
-
-		//this is supposed to return the amount of integers you have in your delegate, in our example only one
-		@Override
-		public int size() {
-			return 2;
-		}
-	};
-
-	public CrucibleEntity(int max_capacity) {
+	public CrucibleEntity(int max_water, int max_ingredients) {
 		super(AlchemicalBrewing.CRUCIBLE_BLOCK_ENTITY);
 		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
-		MAX_CAPACITY = max_capacity;
+		MAX_WATER_CAPACITY = max_water;
+		MAX_INGREDIENT_CAPACITY = max_ingredients;
 	}
 	public CrucibleEntity() {
 		super(AlchemicalBrewing.CRUCIBLE_BLOCK_ENTITY);
 		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
-		MAX_CAPACITY = 8;
+		MAX_WATER_CAPACITY = 9;
+		MAX_INGREDIENT_CAPACITY = 16;
 	}
 	public void setLevel(int newLevel) {
 		if (newLevel > level) {
@@ -87,22 +59,39 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		// the amount of ticks to warm up should be no more than the amount of ticks to warm up this much liquid from scratch
 		ticksToReady = Math.min(ticksToReady, level * 20);
 		this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
+		markDirty();
 		return amount;
 	}
 	public int addLevels(int amount, boolean addLess) {
-		if (amount + level > 8) {
+		if (amount + level > this.MAX_WATER_CAPACITY) {
 			if (addLess) {
-				amount = 8 - level;
+				amount = this.MAX_WATER_CAPACITY - level;
 			} else {
 				return 0;
 			}
 		}
 		ticksToReady += 20 * amount;
 		level = level + amount;
-		AlchemicalBrewing.log(Level.INFO, String.format("Crucible now has %d levels.", level));
 		assert this.world != null;
 		this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
+		markDirty();
 		return amount;
+	}
+
+	// `stack` should be treated as consumed by this method; in rust terms, ownership is transferred here to this class.
+	public boolean addItem(ItemStack stack) {
+		if (this.isReady() && this.itemsInPot.size() < this.MAX_INGREDIENT_CAPACITY) {
+			this.itemsInPot.add(stack);
+			markDirty();
+			return true;
+		}
+		return false;
+	}
+
+	public void emptyPot() {
+		this.itemsInPot.clear();
+		this.level = 0;
+		this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
 	}
 
 	public boolean isReady() {
@@ -120,6 +109,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 			if (ticksToReady == 0) {
 				AlchemicalBrewing.log(Level.INFO, "Crucible is ready");
 			}
+			markDirty();
 		}
 		if (isReady() != wasReady) {
 			assert this.world != null;
@@ -127,6 +117,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 				this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.READY, this.isReady()), 2);
 				this.wasReady = this.isReady();
 			}
+			markDirty();
 		}
 		//TODO: Tick the potion brew here
 	}
