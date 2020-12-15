@@ -4,14 +4,18 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import setadokalo.alchemicalbrewing.item.Vial;
+import setadokalo.alchemicalbrewing.reciperegistry.AlchemyRecipeManager;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -27,6 +31,8 @@ public class AlchemicalBrewing implements ModInitializer {
 
 	public static final Block STONE_CRUCIBLE = new Crucible();
 	public static BlockEntityType<CrucibleEntity> CRUCIBLE_BLOCK_ENTITY;
+	
+	public static final Item VIAL_ITEM = new Vial();
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(
 		new Identifier(MODID, "general"))
@@ -34,8 +40,11 @@ public class AlchemicalBrewing implements ModInitializer {
 		.appendItems(stacks -> {
 			stacks.add(new ItemStack(STONE_CRUCIBLE));
 		}).build();
+	
 	@Override
 	public void onInitialize() {
+		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new AlchemyRecipeManager());
+		
 		Registry.register(Registry.BLOCK, new Identifier(MODID, "stone_crucible"), STONE_CRUCIBLE);
 		CRUCIBLE_BLOCK_ENTITY = Registry.register(
 			Registry.BLOCK_ENTITY_TYPE,

@@ -65,6 +65,7 @@ public class Crucible extends Block implements BlockEntityProvider {
 
 	@Override
 	public @Nullable BlockEntity createBlockEntity(BlockView world) {
+		AlchemicalBrewing.log(Level.INFO, "creating block entity");
 		return new CrucibleEntity(9, 16);
 	}
 

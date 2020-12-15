@@ -1,0 +1,27 @@
+{
+	"ingredients": [
+	  {
+		 "item": "minecraft:rabbit",
+		 "count": 1
+	  },
+	  {
+		 "item": "minecraft:apple",
+		 "count": 1
+	  },
+	  {
+		 "item": "minecraft:carrot",
+		 "count": 1
+	  },
+	  {
+		 "item": "minecraft:potato",
+		 "count": 1
+	  },
+	  {
+		 "tag": "minecraft:mushroom",
+		 "count": 1
+	  }
+	],
+	"results": [
+		"alchemicalbrewing:stew"
+	]
+}

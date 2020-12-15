@@ -4,14 +4,30 @@ import java.util.LinkedList;
 
 import org.apache.logging.log4j.Level;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.util.Tickable;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 
 public class CrucibleEntity extends BlockEntity implements Tickable {
+	private class CookingItemStack {
+		ItemStack itemStack;
+		int cookTimeRemaining;
+		CookingItemStack(ItemStack stack, int cookTime) {
+			itemStack = stack;
+			cookTimeRemaining = cookTime;
+		}
+		boolean tickCooking() {
+			if (cookTimeRemaining > 0)
+				cookTimeRemaining -= 1;
+			return cookTimeRemaining <= 0;
+		}
+	}
 
 	/** The number of ticks until the crucible is ready to be used. */
 	private boolean wasReady = true;
@@ -19,10 +35,20 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	/** The maximum capacity of this crucible (allowing this one base class to be reused). */
 	public final int MAX_WATER_CAPACITY;
 	public final int MAX_INGREDIENT_CAPACITY;
+	
+	// 8 seconds * 20 ticks per second = 160 ticks to cook
+	public static final int DEFAULT_COOK_TIME = 160;
 	/** The current number of bottles of water in this crucible. One bucket = 9 bottles, because how TF does
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
 	private int level = 0;
-	private LinkedList<ItemStack> itemsInPot = new LinkedList<>();
+	private LinkedList<CookingItemStack> itemsInPot = new LinkedList<>();
+
+	void add(LinkedList<CookingItemStack> iIP, ItemStack stack) {
+		iIP.add(new CookingItemStack(stack, DEFAULT_COOK_TIME));
+	}
+	void add(LinkedList<CookingItemStack> iIP, ItemStack stack, int cookTime) {
+		iIP.add(new CookingItemStack(stack, cookTime));
+	}
 
 	public CrucibleEntity(int max_water, int max_ingredients) {
 		super(AlchemicalBrewing.CRUCIBLE_BLOCK_ENTITY);
@@ -81,7 +107,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	// `stack` should be treated as consumed by this method; in rust terms, ownership is transferred here to this class.
 	public boolean addItem(ItemStack stack) {
 		if (this.isReady() && this.itemsInPot.size() < this.MAX_INGREDIENT_CAPACITY) {
-			this.itemsInPot.add(stack);
+			this.add(itemsInPot, stack);
 			markDirty();
 			return true;
 		}
@@ -99,7 +125,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	}
 
 	public boolean isPureWater() {
-		return true; // TODO: implement potion brewing so the water can become non-pure
+		return this.itemsInPot.isEmpty();
 	}
 
 	@Override
@@ -119,6 +145,56 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 			}
 			markDirty();
 		}
-		//TODO: Tick the potion brew here
+		if (isReady()) {
+			for (CookingItemStack cookingItem: this.itemsInPot) {
+				if (cookingItem.tickCooking()) {
+					//TODO: check for complete recipes
+				}
+			}
+		}
+	}
+
+
+	// Serialize the BlockEntity
+	@Override
+	public CompoundTag toTag(CompoundTag tag) {
+		super.toTag(tag);
+
+		// Save the current value of the number to the tag
+		tag.putBoolean("wasReady", this.wasReady);
+		tag.putInt("ticksToReady", this.ticksToReady);
+		tag.putInt("level", this.level);
+		
+		ListTag listTag = new ListTag();
+
+		for(int i = 0; i < this.itemsInPot.size(); ++i) {
+			CookingItemStack cookingItem = (CookingItemStack)this.itemsInPot.get(i);
+			CompoundTag compoundTag = new CompoundTag();
+			cookingItem.itemStack.toTag(compoundTag);
+			compoundTag.putInt("cookTimeRemaining", cookingItem.cookTimeRemaining);
+			listTag.add(compoundTag);
+		}
+
+		if (!listTag.isEmpty()) {
+			tag.put("Items", listTag);
+		}
+
+		return tag;
+	}
+	
+	// Deserialize the BlockEntity
+	@Override
+	public void fromTag(BlockState state, CompoundTag tag) {
+		super.fromTag(state, tag);
+		this.wasReady = tag.getBoolean("wasReady");
+		this.ticksToReady = tag.getInt("ticksToReady");
+		this.level = tag.getInt("level");
+		
+		ListTag listTag = tag.getList("Items", 10);
+
+		for(int i = 0; i < listTag.size(); ++i) {
+			CompoundTag compoundTag = listTag.getCompound(i);
+			this.add(this.itemsInPot, ItemStack.fromTag(compoundTag), compoundTag.getInt("cookTimeRemaining"));
+		}
 	}
 }

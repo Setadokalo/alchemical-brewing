@@ -18,6 +18,7 @@ public class AlchemicalBrewingClient implements ClientModInitializer {
         ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> {
             assert view != null;
             return BiomeColors.getWaterColor(view, pos);
-        }, AlchemicalBrewing.STONE_CRUCIBLE);
+		  }, AlchemicalBrewing.STONE_CRUCIBLE);
+		  
     }
 }
