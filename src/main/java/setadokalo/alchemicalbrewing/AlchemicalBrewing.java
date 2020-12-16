@@ -4,8 +4,10 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.item.Vial;
 import setadokalo.alchemicalbrewing.reciperegistry.AlchemyRecipeManager;
+import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -21,6 +23,7 @@ import net.minecraft.util.registry.Registry;
 
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
+import setadokalo.alchemicalbrewing.fluideffects.Stew;
 
 public class AlchemicalBrewing implements ModInitializer {
 
@@ -32,7 +35,8 @@ public class AlchemicalBrewing implements ModInitializer {
 	public static final Block STONE_CRUCIBLE = new Crucible();
 	public static BlockEntityType<CrucibleEntity> CRUCIBLE_BLOCK_ENTITY;
 	
-	public static final Item VIAL_ITEM = new Vial();
+	public static final Item VIAL = new Vial();
+	public static final Item FILLED_VIAL = new FilledVial();
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(
 		new Identifier(MODID, "general"))
@@ -56,6 +60,18 @@ public class AlchemicalBrewing implements ModInitializer {
 			new Identifier(MODID, "stone_crucible"),
 			new BlockItem(STONE_CRUCIBLE, new Item.Settings().group(ItemGroup.BREWING))
 		);
+		Registry.register(
+			Registry.ITEM,
+			new Identifier(MODID, "vial"),
+			VIAL
+		);
+		Registry.register(
+			Registry.ITEM,
+			new Identifier(MODID, "filled_vial"),
+			FILLED_VIAL
+		);
+
+		AlchemyEffectRegistry.register(new Stew(new Identifier(MODID, "stew"), "fluideffect." + MODID + ".stew"));
 	}
 	public static void log(Level level, String message){
 		LOGGER.log(level, "["+MOD_NAME+"] " + message);

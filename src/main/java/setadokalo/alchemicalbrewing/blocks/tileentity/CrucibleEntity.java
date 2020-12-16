@@ -1,11 +1,13 @@
 package setadokalo.alchemicalbrewing.blocks.tileentity;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.logging.log4j.Level;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -13,6 +15,10 @@ import net.minecraft.util.Tickable;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
+import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
+import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
+import setadokalo.alchemicalbrewing.registry.AlchemyRecipeRegistry;
 
 public class CrucibleEntity extends BlockEntity implements Tickable {
 	private class CookingItemStack {
@@ -42,6 +48,8 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
 	private int level = 0;
 	private LinkedList<CookingItemStack> itemsInPot = new LinkedList<>();
+	private LinkedList<ItemStack> readyItemsInPot = new LinkedList<>();
+	private LinkedList<ConcentratedFluidEffect> effectsInPot = new LinkedList<>();
 
 	void add(LinkedList<CookingItemStack> iIP, ItemStack stack) {
 		iIP.add(new CookingItemStack(stack, DEFAULT_COOK_TIME));
@@ -116,6 +124,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 
 	public void emptyPot() {
 		this.itemsInPot.clear();
+		this.readyItemsInPot.clear();
 		this.level = 0;
 		this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
 	}
@@ -125,7 +134,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	}
 
 	public boolean isPureWater() {
-		return this.itemsInPot.isEmpty();
+		return this.itemsInPot.isEmpty() && this.readyItemsInPot.isEmpty();
 	}
 
 	@Override
@@ -146,12 +155,55 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 			markDirty();
 		}
 		if (isReady()) {
+			LinkedList<CookingItemStack> itemsToRemove = new LinkedList<>();
 			for (CookingItemStack cookingItem: this.itemsInPot) {
 				if (cookingItem.tickCooking()) {
-					//TODO: check for complete recipes
+					itemsToRemove.add(cookingItem);
+					this.readyItemsInPot.add(cookingItem.itemStack);
+					for (AlchemyRecipe recipe: AlchemyRecipeRegistry.values()) {
+						if (tryPerformRecipe(recipe))
+							break;
+					}
 				}
 			}
+			for (CookingItemStack item : itemsToRemove) {
+				this.itemsInPot.remove(item);
+			}
 		}
+	}
+
+	protected boolean tryPerformRecipe(AlchemyRecipe recipe) {
+		LinkedList<ItemStack> list = (LinkedList<ItemStack>) this.readyItemsInPot.clone();
+		LinkedList<ItemStack> foundItems = new LinkedList<>();
+		for (Item requiredItem: recipe.ingredients) {
+			if (!isItemInPot(list, requiredItem, foundItems))
+				return false;
+		}
+		for (ItemStack item: foundItems) {
+			this.readyItemsInPot.remove(item);
+		}
+
+		for (ConcentratedFluidEffect result : recipe.results) {
+			this.effectsInPot.add(result.clone());
+		}
+
+		return true;
+	}
+
+	protected boolean isItemInPot(List<ItemStack> list, Item requiredItem, List<ItemStack> moveToList) {
+		ItemStack foundItem = null;
+		for (ItemStack item: list) {
+			if (item.getItem() == requiredItem) {
+				foundItem = item;
+				break;
+			}
+		}
+		if (foundItem != null) {
+			list.remove(foundItem);
+			moveToList.add(foundItem);
+			return true;
+		}
+		return false;
 	}
 
 
@@ -178,6 +230,18 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		if (!listTag.isEmpty()) {
 			tag.put("Items", listTag);
 		}
+		ListTag readyTag = new ListTag();
+
+		for(int i = 0; i < this.itemsInPot.size(); ++i) {
+			ItemStack cookingItem = (ItemStack)this.readyItemsInPot.get(i);
+			CompoundTag compoundTag = new CompoundTag();
+			cookingItem.toTag(compoundTag);
+			readyTag.add(compoundTag);
+		}
+
+		if (!readyTag.isEmpty()) {
+			tag.put("ReadyItems", readyTag);
+		}
 
 		return tag;
 	}
@@ -195,6 +259,12 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		for(int i = 0; i < listTag.size(); ++i) {
 			CompoundTag compoundTag = listTag.getCompound(i);
 			this.add(this.itemsInPot, ItemStack.fromTag(compoundTag), compoundTag.getInt("cookTimeRemaining"));
+		}
+		listTag = tag.getList("ReadyItems", 10);
+
+		for(int i = 0; i < listTag.size(); ++i) {
+			CompoundTag compoundTag = listTag.getCompound(i);
+			this.readyItemsInPot.add(ItemStack.fromTag(compoundTag));
 		}
 	}
 }

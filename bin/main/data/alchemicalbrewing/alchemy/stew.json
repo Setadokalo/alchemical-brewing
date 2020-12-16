@@ -17,11 +17,14 @@
 		 "count": 1
 	  },
 	  {
-		 "tag": "minecraft:mushroom",
+		 "item": "minecraft:brown_mushroom",
 		 "count": 1
 	  }
 	],
 	"results": [
-		"alchemicalbrewing:stew"
+		{
+			"effect": "alchemicalbrewing:stew",
+			"concentration": 2.0
+		}
 	]
 }

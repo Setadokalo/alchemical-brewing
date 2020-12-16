@@ -1,4 +1,5 @@
 {
 	"block.alchemicalbrewing.stone_crucible": "Stone Crucible",
-	"itemGroup.alchemicalbrewing.general": "Alchemical Brewing"
+	"itemGroup.alchemicalbrewing.general": "Alchemical Brewing",
+	"fluideffect.alchemicalbrewing.stew": "Stew"
 }

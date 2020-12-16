@@ -1,4 +1,4 @@
-package setadokalo.alchemicalbrewing.reciperegistry;
+package setadokalo.alchemicalbrewing.registry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,22 +12,20 @@ public class AlchemyRecipeRegistry {
 	private static HashMap<Identifier, AlchemyRecipe> idToAlchemyRecipe = new HashMap<>();
 
 	public static AlchemyRecipe register(AlchemyRecipe alchemyRecipe) {
-		return register(alchemyRecipe.getIdentifier(), alchemyRecipe);
-	}
-
-	public static AlchemyRecipe register(Identifier id, AlchemyRecipe alchemyRecipe) {
-		if (idToAlchemyRecipe.containsKey(id)) {
-			throw new IllegalArgumentException("Duplicate alchemyRecipe id tried to register: '" + id.toString() + "'");
-		}
+		Identifier id = alchemyRecipe.getIdentifier();
+		// if (idToAlchemyRecipe.containsKey(id)) {
+		// 	throw new IllegalArgumentException("Duplicate alchemyRecipe id tried to register: '" + id.toString() + "'");
+		// }
 		idToAlchemyRecipe.put(id, alchemyRecipe);
 		return alchemyRecipe;
 	}
 
-	protected static AlchemyRecipe update(Identifier id, AlchemyRecipe alchemyRecipe) {
+	protected static AlchemyRecipe update(AlchemyRecipe alchemyRecipe) {
+		Identifier id = alchemyRecipe.getIdentifier();
 		if (idToAlchemyRecipe.containsKey(id)) {
 			idToAlchemyRecipe.remove(id);
 		}
-		return register(id, alchemyRecipe);
+		return register(alchemyRecipe);
 	}
 
 	public static int size() {
@@ -69,6 +67,5 @@ public class AlchemyRecipeRegistry {
 
 	public static void reset() {
 		clear();
-		register(AlchemyRecipe.EMPTY);
 	}
 }
