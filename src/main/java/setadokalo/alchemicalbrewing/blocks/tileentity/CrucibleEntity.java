@@ -1,6 +1,7 @@
 package setadokalo.alchemicalbrewing.blocks.tileentity;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
@@ -16,7 +17,7 @@ import net.minecraft.util.Tickable;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
-import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
+import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 import setadokalo.alchemicalbrewing.registry.AlchemyRecipeRegistry;
 
@@ -47,14 +48,14 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	/** The current number of bottles of water in this crucible. One bucket = 9 bottles, because how TF does
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
 	private int level = 0;
-	private LinkedList<CookingItemStack> itemsInPot = new LinkedList<>();
-	private LinkedList<ItemStack> readyItemsInPot = new LinkedList<>();
-	private LinkedList<ConcentratedFluidEffect> effectsInPot = new LinkedList<>();
+	private ArrayList<CookingItemStack> itemsInPot = new ArrayList<>();
+	private ArrayList<ItemStack> readyItemsInPot = new ArrayList<>();
+	private ArrayList<ConcentratedFluidEffect> effectsInPot = new ArrayList<>();
 
-	void add(LinkedList<CookingItemStack> iIP, ItemStack stack) {
+	void add(ArrayList<CookingItemStack> iIP, ItemStack stack) {
 		iIP.add(new CookingItemStack(stack, DEFAULT_COOK_TIME));
 	}
-	void add(LinkedList<CookingItemStack> iIP, ItemStack stack, int cookTime) {
+	void add(ArrayList<CookingItemStack> iIP, ItemStack stack, int cookTime) {
 		iIP.add(new CookingItemStack(stack, cookTime));
 	}
 
@@ -74,28 +75,47 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		if (newLevel > level) {
 			this.addLevels(newLevel - level, true);
 		} else {
-			this.takeLevels(level - newLevel, true);
+			this.removeLevels(level - newLevel, true, true);
 		}
 	}
 	public int getLevel() {
 		return level;
 	}
 
-	public int takeLevels(int amount, boolean takeLess) {
-		if (amount > level) {
-			if (takeLess) {
-				amount = level;
-			} else {
-				return 0;
+	public int removeLevels(int amount, boolean takeLess, boolean ignorePurity) {
+		if (ignorePurity || this.isPureWater()) {
+			if (amount > level) {
+				if (takeLess) {
+					amount = level;
+				} else {
+					return 0;
+				}
 			}
+			level = level - amount;
+			// the amount of ticks to warm up should be no more than the amount of ticks to warm up this much liquid from scratch
+			ticksToReady = Math.min(ticksToReady, level * 20);
+			this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
+			markDirty();
+			return amount;
 		}
-		level = level - amount;
-		// the amount of ticks to warm up should be no more than the amount of ticks to warm up this much liquid from scratch
-		ticksToReady = Math.min(ticksToReady, level * 20);
-		this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
-		markDirty();
-		return amount;
+		return 0;
 	}
+
+	public CompoundTag takeLevels(int amount) {
+		if (level < amount)
+			return null;
+		double fAmount = ((float) amount) / ((float) level);
+		ConcentratedFluidEffect[] effectArray = new ConcentratedFluidEffect[effectsInPot.size()];
+		for (int i = 0; i < effectsInPot.size(); i++) {
+			ConcentratedFluidEffect effect = effectsInPot.get(i).split(fAmount);
+			effectArray[i] = effect;
+		}
+		CompoundTag tag = new CompoundTag();
+		tag.put("Effects", FilledVial.getTagForEffects(effectArray));
+		return tag;
+	}
+
+
 	public int addLevels(int amount, boolean addLess) {
 		if (amount + level > this.MAX_WATER_CAPACITY) {
 			if (addLess) {
@@ -155,14 +175,16 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 			markDirty();
 		}
 		if (isReady()) {
-			LinkedList<CookingItemStack> itemsToRemove = new LinkedList<>();
+			ArrayList<CookingItemStack> itemsToRemove = new ArrayList<>();
 			for (CookingItemStack cookingItem: this.itemsInPot) {
 				if (cookingItem.tickCooking()) {
 					itemsToRemove.add(cookingItem);
 					this.readyItemsInPot.add(cookingItem.itemStack);
 					for (AlchemyRecipe recipe: AlchemyRecipeRegistry.values()) {
-						if (tryPerformRecipe(recipe))
+						if (tryPerformRecipe(recipe)) {
+							AlchemicalBrewing.log(Level.INFO, "performed recipe " + recipe);
 							break;
+						}
 					}
 				}
 			}
@@ -173,8 +195,8 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	}
 
 	protected boolean tryPerformRecipe(AlchemyRecipe recipe) {
-		LinkedList<ItemStack> list = (LinkedList<ItemStack>) this.readyItemsInPot.clone();
-		LinkedList<ItemStack> foundItems = new LinkedList<>();
+		ArrayList<ItemStack> list = (ArrayList<ItemStack>) this.readyItemsInPot.clone();
+		ArrayList<ItemStack> foundItems = new ArrayList<>();
 		for (Item requiredItem: recipe.ingredients) {
 			if (!isItemInPot(list, requiredItem, foundItems))
 				return false;

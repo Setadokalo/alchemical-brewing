@@ -3,6 +3,8 @@ package setadokalo.alchemicalbrewing.fluideffects;
 import com.google.gson.JsonObject;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
 
@@ -27,17 +29,16 @@ public class ConcentratedFluidEffect {
 	 * (Used to get Effect data from `ItemStack`s)
 	 */
 	public static ConcentratedFluidEffect fromTag(CompoundTag compoundTag) {
-		if (compoundTag.contains("effect", 10)) {
-			CompoundTag effectTag = compoundTag.getCompound("effect");
-			FluidEffect effect = FluidEffect.fromTag(effectTag);
-			if (compoundTag.contains("concentration", 6)) {
-				double conc = compoundTag.getDouble("concentration");
-				return new ConcentratedFluidEffect(effect, conc);
-			} else {
-				return new ConcentratedFluidEffect(effect, 1.0);
-			}
+		FluidEffect effect = FluidEffect.fromTag(compoundTag);
+		if (effect == null) {
+			return null;
 		}
-		return null;
+		if (compoundTag.contains("concentration", 6)) {
+			double conc = compoundTag.getDouble("concentration");
+			return new ConcentratedFluidEffect(effect, conc);
+		} else {
+			return new ConcentratedFluidEffect(effect, 1.0);
+		}
 	}
 
 	/**
@@ -52,5 +53,22 @@ public class ConcentratedFluidEffect {
 
 	public ConcentratedFluidEffect clone() {
 		return new ConcentratedFluidEffect(this.effect, this.concentration);
+	}
+
+	public void toTag(CompoundTag tag) {
+		this.effect.toTag(tag);
+		tag.putDouble("concentration", this.concentration);
+	}
+
+	public Text getTooltip() {
+		return this.effect.getTooltip(this.concentration);
+	}
+
+	public ConcentratedFluidEffect split(double fracToTake) {
+		if (fracToTake < 0.0 || fracToTake > 1.0)
+			throw new IllegalArgumentException("fracToTake must be between 0 and 1");
+		ConcentratedFluidEffect newEffect = new ConcentratedFluidEffect(this.effect, this.concentration * fracToTake);
+		this.concentration *= (1.0 - fracToTake);
+		return newEffect;
 	}
 }

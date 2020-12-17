@@ -11,11 +11,11 @@ public class Stew extends FluidEffect {
 	public static final Color stewColor = new Color(143, 71, 0);
 
 	public Stew(Identifier id) {
-		super(id);
+		super(id, EffectType.POSITIVE);
 	}
 	
 	public Stew(Identifier id, String key) {
-		super(id, key);
+		super(id, key, EffectType.POSITIVE);
 	}
 	
 	public void applyEffect(World world, Entity entity, double concentration) {

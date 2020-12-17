@@ -5,6 +5,9 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
@@ -15,20 +18,44 @@ import setadokalo.alchemicalbrewing.util.Color;
  * An effect that can be in a fluid (shocker, I know). 
  */
 public class FluidEffect {
-	public static final FluidEffect EMPTY = new FluidEffect(new Identifier(AlchemicalBrewing.MODID, "empty"));
-	@Nullable
-	protected String translationKey;
-	protected Identifier identifier;
-	protected float concentration;
+	public enum EffectType {
+		POSITIVE(Formatting.AQUA),
+		NEUTRAL(Formatting.WHITE),
+		NEGATIVE(Formatting.RED),
+		OTHER(Formatting.YELLOW);
+		
+		private final Formatting format;
+		EffectType(Formatting formatting) {
+			format = formatting;
+		}
 
-	public FluidEffect(Identifier id, String key) {
-		identifier = id;
-		translationKey = key;
+		public Formatting getFormatting() {
+			return this.format;
+		}
 	}
 
-	public FluidEffect(Identifier id) {
+	public static final FluidEffect EMPTY = new FluidEffect(new Identifier(AlchemicalBrewing.MODID, "empty"), EffectType.OTHER);
+	@Nullable
+	protected String partialtranslationKey;
+	protected EffectType type;
+	protected Identifier identifier;
+
+	/**
+	 * Constructs a new fluid effect.
+	 * @param id the identifier to refer to this effect with in the registry
+	 * @param partialKey the part of the translation key after `name` or `tooltip`
+	 */
+	public FluidEffect(Identifier id, @Nullable String partialKey, EffectType type) {
+		assert id != null;
 		identifier = id;
-		translationKey = null;
+		partialtranslationKey = partialKey;
+		assert type != null;
+		this.type = type;
+	}
+
+	public FluidEffect(Identifier id, EffectType type) {
+		identifier = id;
+		partialtranslationKey = null;
 	}
 
 	public void applyEffect(World world, Entity entity, double concentration) {
@@ -39,9 +66,20 @@ public class FluidEffect {
 		return Color.WHITE;
 	}
 
+	protected void generateTranslationKey() {
+		this.partialtranslationKey = "fluideffect." + this.identifier.getNamespace() + "." + this.identifier.getPath();
+	}
+
 	@Nullable
-	public String getTranslationKey() {
-		return this.translationKey;
+	public Text getTooltip(double concentration) {
+		if (this.partialtranslationKey == null)
+			generateTranslationKey();
+		return new TranslatableText("tooltip." + this.partialtranslationKey, concentration).formatted(this.type.getFormatting());
+	}
+
+	@Nullable
+	public Text getName() {
+		return new TranslatableText("name." + this.partialtranslationKey).formatted(this.type.getFormatting());
 	}
 
 	public Identifier getIdentifier() {
@@ -53,10 +91,14 @@ public class FluidEffect {
 	 * (Used to get Effect data from `ItemStack`s)
 	 */
 	public static FluidEffect fromTag(CompoundTag compoundTag) {
-		if (compoundTag.contains("id", 8)) {
-			String id = compoundTag.getString("id");
+		if (compoundTag.contains("identifier", 8)) {
+			String id = compoundTag.getString("identifier");
 			return AlchemyEffectRegistry.get(new Identifier(id));
 		}
 		return null;
+	}
+
+	public void toTag(CompoundTag tag) {
+		tag.putString("identifier", this.identifier.toString());
 	}
 }

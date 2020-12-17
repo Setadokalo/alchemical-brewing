@@ -1,5 +1,6 @@
 package setadokalo.alchemicalbrewing.blocks;
 
+import java.util.Optional;
 import java.util.Random;
 
 import org.apache.logging.log4j.Level;
@@ -18,6 +19,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.PotionUtil;
@@ -106,33 +108,32 @@ public class Crucible extends Block implements BlockEntityProvider {
 			} else if (item == Items.BUCKET) {
 				if (i >= 9 && !world.isClient) {
 					if (!player.abilities.creativeMode) {
-						itemStack.decrement(1);
-						if (itemStack.isEmpty()) {
-							if (entity.isPureWater()) {
+						if (entity.isPureWater()) {
+							itemStack.decrement(1);
+							if (itemStack.isEmpty()) {
 								player.setStackInHand(hand, new ItemStack(Items.WATER_BUCKET));
+							} else if (!player.inventory.insertStack(new ItemStack(Items.WATER_BUCKET))) {
+								player.dropItem(new ItemStack(Items.WATER_BUCKET), false);
 							}
-						} else if (!player.inventory.insertStack(new ItemStack(Items.WATER_BUCKET))) {
-							player.dropItem(new ItemStack(Items.WATER_BUCKET), false);
 						}
 					}
-					entity.takeLevels(9, true);
+					entity.removeLevels(9, true, false);
 					world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
 				}
 
 				return ActionResult.success(world.isClient);
-			} else if (item == Items.GLASS_BOTTLE) {
+			} else if (item == AlchemicalBrewing.VIAL) {
 				if (i >= 1 && !world.isClient) {
 					if (!player.abilities.creativeMode) {
 						itemStack.decrement(1);
-						if (itemStack.isEmpty()) {
-							if (entity.isPureWater()) {
-								player.setStackInHand(hand, PotionUtil.setPotion(new ItemStack(Items.POTION), Potions.WATER));
-							}
-						} else if (!player.inventory.insertStack(PotionUtil.setPotion(new ItemStack(Items.POTION), Potions.WATER))) {
-							player.dropItem(Items.POTION.getDefaultStack(), false);
-						}
 					}
-					entity.takeLevels(1, true);
+					ItemStack newPotion = new ItemStack(AlchemicalBrewing.FILLED_VIAL, 1);
+					newPotion.setTag(entity.takeLevels(1));
+					if (itemStack.isEmpty()) {
+						player.setStackInHand(hand, newPotion);
+					} else if (!player.inventory.insertStack(newPotion)) {
+						player.dropItem(newPotion, false);
+					}
 					world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
 				}
 
@@ -146,7 +147,7 @@ public class Crucible extends Block implements BlockEntityProvider {
 							itemStack.decrement(1);
 					}
 				}
-				return ActionResult.SUCCESS;
+				return ActionResult.success(world.isClient);
 			}
 		}
 	}

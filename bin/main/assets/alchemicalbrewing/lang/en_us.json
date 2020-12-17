@@ -1,5 +1,8 @@
 {
 	"block.alchemicalbrewing.stone_crucible": "Stone Crucible",
 	"itemGroup.alchemicalbrewing.general": "Alchemical Brewing",
-	"fluideffect.alchemicalbrewing.stew": "Stew"
+	"item.alchemicalbrewing.vial": "Vial",
+	"item.alchemicalbrewing.filled_vial": "Filled Vial",
+	"name.fluideffect.alchemicalbrewing.stew": "Stew",
+	"tooltip.fluideffect.alchemicalbrewing.stew": "Stew (%.2f% concentration) _test_"
 }
