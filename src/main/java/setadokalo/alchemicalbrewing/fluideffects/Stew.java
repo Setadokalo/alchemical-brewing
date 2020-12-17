@@ -1,14 +1,18 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
-import java.awt.Color;
+import org.apache.commons.lang3.math.Fraction;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import setadokalo.alchemicalbrewing.util.Color;
 
 public class Stew extends FluidEffect {
-	public static final Color stewColor = new Color(143, 71, 0);
+	public static final Color STEW_COLOR = new Color(143, 71, 0);
+	public static final Fraction STEW_BASE_HUNGER = Fraction.getFraction(10, 1); 
+
 
 	public Stew(Identifier id) {
 		super(id, EffectType.POSITIVE);
@@ -18,13 +22,15 @@ public class Stew extends FluidEffect {
 		super(id, key, EffectType.POSITIVE);
 	}
 	
-	public void applyEffect(World world, Entity entity, double concentration) {
+	@Override
+	public void applyEffect(World world, Entity entity, Fraction fConcentration) {
 		if (entity instanceof PlayerEntity) {
-			((PlayerEntity)entity).getHungerManager().add((int)(7.0 * concentration), 0.75f);
+			((PlayerEntity)entity).getHungerManager().add((int)(fConcentration.multiplyBy(STEW_BASE_HUNGER).getProperWhole()), 0.75f);
 		}
 	}
 
-	public Color getColor(World world, Entity entity) {
-		return stewColor;
+	@Override
+	public Color getColor(ItemStack stack) {
+		return STEW_COLOR;
 	}
 }

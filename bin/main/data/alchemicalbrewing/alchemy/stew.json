@@ -24,7 +24,7 @@
 	"results": [
 		{
 			"effect": "alchemicalbrewing:stew",
-			"concentration": 2.0
+			"concentration": "2"
 		}
 	]
 }

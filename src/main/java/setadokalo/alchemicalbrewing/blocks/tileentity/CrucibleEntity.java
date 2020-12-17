@@ -1,17 +1,20 @@
 package setadokalo.alchemicalbrewing.blocks.tileentity;
 
 import java.util.ArrayList;
-import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.math.Fraction;
 import org.apache.logging.log4j.Level;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Tickable;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
@@ -43,8 +46,8 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	public final int MAX_WATER_CAPACITY;
 	public final int MAX_INGREDIENT_CAPACITY;
 	
-	// 8 seconds * 20 ticks per second = 160 ticks to cook
-	public static final int DEFAULT_COOK_TIME = 160;
+	// 4 seconds * 20 ticks per second = 160 ticks to cook
+	public static final int DEFAULT_COOK_TIME = 80;
 	/** The current number of bottles of water in this crucible. One bucket = 9 bottles, because how TF does
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
 	private int level = 0;
@@ -104,14 +107,16 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	public CompoundTag takeLevels(int amount) {
 		if (level < amount)
 			return null;
-		double fAmount = ((float) amount) / ((float) level);
+		Fraction fracToTake = Fraction.getFraction(amount, level);
 		ConcentratedFluidEffect[] effectArray = new ConcentratedFluidEffect[effectsInPot.size()];
 		for (int i = 0; i < effectsInPot.size(); i++) {
-			ConcentratedFluidEffect effect = effectsInPot.get(i).split(fAmount);
+			ConcentratedFluidEffect effect = effectsInPot.get(i).split(fracToTake);
 			effectArray[i] = effect;
 		}
 		CompoundTag tag = new CompoundTag();
 		tag.put("Effects", FilledVial.getTagForEffects(effectArray));
+		this.level -= amount;
+		this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
 		return tag;
 	}
 
@@ -136,6 +141,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	public boolean addItem(ItemStack stack) {
 		if (this.isReady() && this.itemsInPot.size() < this.MAX_INGREDIENT_CAPACITY) {
 			this.add(itemsInPot, stack);
+			AlchemicalBrewing.log(Level.INFO, "Added item " + stack.getItem().toString() + " to pot");
 			markDirty();
 			return true;
 		}
@@ -181,9 +187,11 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 					itemsToRemove.add(cookingItem);
 					this.readyItemsInPot.add(cookingItem.itemStack);
 					for (AlchemyRecipe recipe: AlchemyRecipeRegistry.values()) {
-						if (tryPerformRecipe(recipe)) {
+						while (tryPerformRecipe(recipe)) {
 							AlchemicalBrewing.log(Level.INFO, "performed recipe " + recipe);
-							break;
+							for (PlayerEntity player : this.getWorld().getPlayers()) {
+								player.sendMessage(new LiteralText("Recipe \"" + recipe.getIdentifier() + "\" completed"), false);
+							}
 						}
 					}
 				}
@@ -206,12 +214,24 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		}
 
 		for (ConcentratedFluidEffect result : recipe.results) {
-			this.effectsInPot.add(result.clone());
+			this.addEffectToPot(result);
 		}
 
 		return true;
 	}
 
+	public void addEffectToPot(ConcentratedFluidEffect effectToAdd) {
+		boolean resultFoundInPot = false;
+		for (ConcentratedFluidEffect effectInPot : this.effectsInPot) {
+			if (effectInPot.effect == effectToAdd.effect) {
+				effectInPot.concentration = effectInPot.concentration.add(effectToAdd.concentration);
+				resultFoundInPot = true;
+				break;
+			}
+		}
+		if (!resultFoundInPot)
+			this.effectsInPot.add(effectToAdd.clone());
+	}
 	protected boolean isItemInPot(List<ItemStack> list, Item requiredItem, List<ItemStack> moveToList) {
 		ItemStack foundItem = null;
 		for (ItemStack item: list) {

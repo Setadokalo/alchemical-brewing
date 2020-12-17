@@ -4,11 +4,13 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
+import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -16,18 +18,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.util.Color;
 
-//TODO extract Effects from filled crucibles
 public class FilledVial extends Item {
 
 	public FilledVial() {
-		super(new Settings().group(ItemGroup.BREWING));
+		super(new Settings().group(ItemGroup.BREWING).maxCount(64));
 	}
 
    public UseAction getUseAction(ItemStack stack) {
@@ -46,18 +46,22 @@ public class FilledVial extends Item {
 		}
 	}
 	
-	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-		ItemStack itemStack = user.getStackInHand(hand);
-		List<ConcentratedFluidEffect> effects = getEffects(itemStack);
-		if (effects.isEmpty())
-			return TypedActionResult.pass(itemStack);
+	@Override
+	public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
+		List<ConcentratedFluidEffect> effects = getEffects(stack);
+		if (!world.isClient) {
+			if (user instanceof PlayerEntity) {
+				if (!((PlayerEntity)user).abilities.creativeMode) {
+					stack.decrement(1);
+					((PlayerEntity) user).giveItemStack(new ItemStack(AlchemicalBrewing.VIAL, 1));
+				}
+			}
+		}
 
 		for (ConcentratedFluidEffect cEffect : effects) {
 			cEffect.effect.applyEffect(world, user, cEffect.concentration);
 		}
-		itemStack.decrement(1);
-		user.giveItemStack(new ItemStack(AlchemicalBrewing.VIAL, 1));
-		return TypedActionResult.consume(itemStack);
+		return stack;
    }
 
 	public static List<ConcentratedFluidEffect> getEffects(ItemStack stack) {
@@ -96,7 +100,25 @@ public class FilledVial extends Item {
 
 
 	public static int getColorForStack(ItemStack stack) {
-		//TODO get color by polling each effect in the stack for it's color and mixing them together
+		if (stack.getItem() == AlchemicalBrewing.FILLED_VIAL) {
+			List<ConcentratedFluidEffect> effects = FilledVial.getEffects(stack);
+			// colors.add(Color.WATER);
+			Fraction totalConcentration = Fraction.ZERO;
+			for (ConcentratedFluidEffect effect : effects) {
+				totalConcentration = totalConcentration.add(effect.concentration);
+			}
+			Color totalColor = Color.BLACK;
+			double dTotalCon = totalConcentration.doubleValue();
+			for (ConcentratedFluidEffect effect : effects) {
+				Color currentColor = effect.effect.getColor(stack);
+				currentColor = currentColor.mul(effect.concentration.doubleValue() / dTotalCon);
+				totalColor = totalColor.add(currentColor);
+			}
+			if (dTotalCon < 1.0) {
+				totalColor = Color.WATER.mix(totalColor, dTotalCon);
+			}
+			return totalColor.asInt();
+		}
 		return 0;
 	}
 }

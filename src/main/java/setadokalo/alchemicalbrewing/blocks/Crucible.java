@@ -1,6 +1,5 @@
 package setadokalo.alchemicalbrewing.blocks;
 
-import java.util.Optional;
 import java.util.Random;
 
 import org.apache.logging.log4j.Level;
@@ -19,7 +18,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.potion.PotionUtil;
@@ -40,6 +38,8 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
+import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.item.FilledVial;
 
 public class Crucible extends Block implements BlockEntityProvider {
 	protected final ParticleEffect particle = ParticleTypes.BUBBLE_COLUMN_UP;
@@ -138,6 +138,15 @@ public class Crucible extends Block implements BlockEntityProvider {
 				}
 
 				return ActionResult.success(world.isClient);
+			} else if (item == AlchemicalBrewing.FILLED_VIAL) {
+				if (!world.isClient) {
+					if (entity.addLevels(1, false) == 1) {
+						for (ConcentratedFluidEffect effect : FilledVial.getEffects(itemStack))
+							entity.addEffectToPot(effect);
+						return ActionResult.success(world.isClient);
+					}
+				}
+				return ActionResult.PASS;
 			} else {
 				if (!world.isClient) {
 					ItemStack borrowedStack = itemStack.copy();
@@ -145,9 +154,10 @@ public class Crucible extends Block implements BlockEntityProvider {
 					if (entity.addItem(itemStack)) {
 						if (!player.abilities.creativeMode)
 							itemStack.decrement(1);
+						return ActionResult.success(world.isClient);
 					}
 				}
-				return ActionResult.success(world.isClient);
+				return ActionResult.PASS;
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
+import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.Entity;
@@ -58,11 +59,17 @@ public class FluidEffect {
 		partialtranslationKey = null;
 	}
 
-	public void applyEffect(World world, Entity entity, double concentration) {
-		// no default effect, for now at least
+	/**
+	 * Applies the effect of this potion when a user finishes drinking it.
+	 * <br><br>
+	 * <b>IMPORTANT NOTE:</b> This mod considers an "effect" to be an INSTANTANEOUS effect
+	 * at the moment of consumption. To provide a lasting effect, you'll need to 
+	 * have `applyEffect` apply a STATUS effect.
+	 */
+	public void applyEffect(World world, Entity entity, Fraction concentration) {
 	}
 
-	public Color getColor(World world, Entity entity, ItemStack stack) {
+	public Color getColor(ItemStack stack) {
 		return Color.WHITE;
 	}
 
@@ -71,7 +78,7 @@ public class FluidEffect {
 	}
 
 	@Nullable
-	public Text getTooltip(double concentration) {
+	public Text getTooltip(String concentration) {
 		if (this.partialtranslationKey == null)
 			generateTranslationKey();
 		return new TranslatableText("tooltip." + this.partialtranslationKey, concentration).formatted(this.type.getFormatting());

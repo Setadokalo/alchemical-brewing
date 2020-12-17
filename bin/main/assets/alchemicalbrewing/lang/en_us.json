@@ -4,5 +4,5 @@
 	"item.alchemicalbrewing.vial": "Vial",
 	"item.alchemicalbrewing.filled_vial": "Filled Vial",
 	"name.fluideffect.alchemicalbrewing.stew": "Stew",
-	"tooltip.fluideffect.alchemicalbrewing.stew": "Stew (%.2f% concentration) _test_"
+	"tooltip.fluideffect.alchemicalbrewing.stew": "Stew (%s parts)"
 }

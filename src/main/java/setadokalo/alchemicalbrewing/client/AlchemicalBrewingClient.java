@@ -10,6 +10,7 @@ import net.minecraft.client.render.RenderLayer;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.item.FilledVial;
+import setadokalo.alchemicalbrewing.util.Color;
 
 @Environment(EnvType.CLIENT)
 public class AlchemicalBrewingClient implements ClientModInitializer {
@@ -21,10 +22,10 @@ public class AlchemicalBrewingClient implements ClientModInitializer {
          return BiomeColors.getWaterColor(view, pos);
 		}, AlchemicalBrewing.STONE_CRUCIBLE);
 		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
-			if (stack.getItem() instanceof FilledVial) {
+			if (stack.getItem() instanceof FilledVial && tintIndex == 0) {
 				return FilledVial.getColorForStack(stack);
 			} else {
-				return 0;
+				return Color.WHITE.asInt();
 			}
 		}, AlchemicalBrewing.FILLED_VIAL);
    }
