@@ -13,7 +13,7 @@ import net.minecraft.util.registry.Registry;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
 
-public class AlchemyRecipe {
+public final class AlchemyRecipe {
 
 	public final ConcentratedFluidEffect[] results;
 	public final Item[] ingredients;

@@ -1,0 +1,30 @@
+{
+	"ingredients": [
+	  {
+		 "item": "minecraft:rabbit",
+		 "count": 1
+	  },
+	  {
+		 "item": "minecraft:apple",
+		 "count": 1
+	  },
+	  {
+		 "item": "minecraft:stone",
+		 "count": 1
+	  },
+	  {
+		 "item": "minecraft:potato",
+		 "count": 1
+	  },
+	  {
+		 "item": "minecraft:brown_mushroom",
+		 "count": 1
+	  }
+	],
+	"results": [
+		{
+			"effect": "alchemicalbrewing:healing",
+			"concentration": "2"
+		}
+	]
+}

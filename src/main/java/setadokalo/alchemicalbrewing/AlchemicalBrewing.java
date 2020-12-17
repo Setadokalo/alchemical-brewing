@@ -23,6 +23,7 @@ import net.minecraft.util.registry.Registry;
 
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
+import setadokalo.alchemicalbrewing.fluideffects.Healing;
 import setadokalo.alchemicalbrewing.fluideffects.Stew;
 
 public class AlchemicalBrewing implements ModInitializer {
@@ -31,9 +32,10 @@ public class AlchemicalBrewing implements ModInitializer {
 
 	public static final String MODID = "alchemicalbrewing";
 	public static final String MOD_NAME = "Alchemical Brewing";
+	private static final String LOG_NAME = "[" + MOD_NAME + "] {0}";
 
 	public static final Block STONE_CRUCIBLE = new Crucible();
-	public static BlockEntityType<CrucibleEntity> CRUCIBLE_BLOCK_ENTITY;
+	public static BlockEntityType<CrucibleEntity> crucibleBlockEntity;
 	
 	public static final Item VIAL = new Vial();
 	public static final Item FILLED_VIAL = new FilledVial();
@@ -50,7 +52,7 @@ public class AlchemicalBrewing implements ModInitializer {
 		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new AlchemyRecipeManager());
 		
 		Registry.register(Registry.BLOCK, new Identifier(MODID, "stone_crucible"), STONE_CRUCIBLE);
-		CRUCIBLE_BLOCK_ENTITY = Registry.register(
+		crucibleBlockEntity = Registry.register(
 			Registry.BLOCK_ENTITY_TYPE,
 			MODID + ":stone_crucible",
 			BlockEntityType.Builder.create(CrucibleEntity::new, STONE_CRUCIBLE).build(null)
@@ -72,8 +74,9 @@ public class AlchemicalBrewing implements ModInitializer {
 		);
 
 		AlchemyEffectRegistry.register(new Stew(new Identifier(MODID, "stew"), "fluideffect." + MODID + ".stew"));
+		AlchemyEffectRegistry.register(new Healing(new Identifier(MODID, "healing"), "fluideffect." + MODID + ".healing"));
 	}
 	public static void log(Level level, String message){
-		LOGGER.log(level, "["+MOD_NAME+"] " + message);
+		LOGGER.log(level, LOG_NAME, message);
 	}
 }

@@ -11,7 +11,7 @@ import setadokalo.alchemicalbrewing.util.Color;
 
 public class Stew extends FluidEffect {
 	public static final Color STEW_COLOR = new Color(143, 71, 0);
-	public static final Fraction STEW_BASE_HUNGER = Fraction.getFraction(10, 1); 
+	public static final Fraction STEW_BASE_HUNGER = Fraction.getFraction(6, 1); 
 
 
 	public Stew(Identifier id) {

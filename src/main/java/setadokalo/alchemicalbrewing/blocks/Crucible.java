@@ -143,7 +143,16 @@ public class Crucible extends Block implements BlockEntityProvider {
 					if (entity.addLevels(1, false) == 1) {
 						for (ConcentratedFluidEffect effect : FilledVial.getEffects(itemStack))
 							entity.addEffectToPot(effect);
-						return ActionResult.success(world.isClient);
+						if (!player.abilities.creativeMode) {
+							itemStack.decrement(1);		
+							ItemStack emptyVial = new ItemStack(AlchemicalBrewing.VIAL, 1);
+							if (itemStack.isEmpty()) {
+								player.setStackInHand(hand, emptyVial);
+							} else if (!player.inventory.insertStack(emptyVial)) {
+								player.dropItem(emptyVial, false);
+							}
+						}
+						return ActionResult.success(true);
 					}
 				}
 				return ActionResult.PASS;

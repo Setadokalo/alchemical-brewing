@@ -13,8 +13,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Tickable;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
@@ -40,7 +40,6 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	}
 
 	/** The number of ticks until the crucible is ready to be used. */
-	private boolean wasReady = true;
 	private int ticksToReady = 0;
 	/** The maximum capacity of this crucible (allowing this one base class to be reused). */
 	public final int MAX_WATER_CAPACITY;
@@ -62,14 +61,14 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		iIP.add(new CookingItemStack(stack, cookTime));
 	}
 
-	public CrucibleEntity(int max_water, int max_ingredients) {
-		super(AlchemicalBrewing.CRUCIBLE_BLOCK_ENTITY);
+	public CrucibleEntity(int maxWater, int maxIngredients) {
+		super(AlchemicalBrewing.crucibleBlockEntity);
 		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
-		MAX_WATER_CAPACITY = max_water;
-		MAX_INGREDIENT_CAPACITY = max_ingredients;
+		MAX_WATER_CAPACITY = maxWater;
+		MAX_INGREDIENT_CAPACITY = maxIngredients;
 	}
 	public CrucibleEntity() {
-		super(AlchemicalBrewing.CRUCIBLE_BLOCK_ENTITY);
+		super(AlchemicalBrewing.crucibleBlockEntity);
 		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
 		MAX_WATER_CAPACITY = 9;
 		MAX_INGREDIENT_CAPACITY = 16;
@@ -163,41 +162,53 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		return this.itemsInPot.isEmpty() && this.readyItemsInPot.isEmpty();
 	}
 
-	@Override
-	public void tick() {
-		if (ticksToReady > 0) {
+	public boolean tickToReady() {
+		
+		if (!this.isReady()) {
 			ticksToReady -= 1;
 			if (ticksToReady == 0) {
 				AlchemicalBrewing.log(Level.INFO, "Crucible is ready");
+				if (this.world != null && !this.world.isClient()) {
+					this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.READY, this.isReady()), 2);
+				}
 			}
 			markDirty();
 		}
-		if (isReady() != wasReady) {
-			assert this.world != null;
-			if (!this.world.isClient()) {
-				this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.READY, this.isReady()), 2);
-				this.wasReady = this.isReady();
-			}
-			markDirty();
-		}
-		if (isReady()) {
+		return this.isReady();
+	}
+
+
+	@Override
+	public void tick() {
+		if (tickToReady()) {
 			ArrayList<CookingItemStack> itemsToRemove = new ArrayList<>();
 			for (CookingItemStack cookingItem: this.itemsInPot) {
 				if (cookingItem.tickCooking()) {
 					itemsToRemove.add(cookingItem);
 					this.readyItemsInPot.add(cookingItem.itemStack);
-					for (AlchemyRecipe recipe: AlchemyRecipeRegistry.values()) {
-						while (tryPerformRecipe(recipe)) {
-							AlchemicalBrewing.log(Level.INFO, "performed recipe " + recipe);
-							for (PlayerEntity player : this.getWorld().getPlayers()) {
-								player.sendMessage(new LiteralText("Recipe \"" + recipe.getIdentifier() + "\" completed"), false);
-							}
-						}
-					}
+					tryAllRecipes();
 				}
 			}
 			for (CookingItemStack item : itemsToRemove) {
 				this.itemsInPot.remove(item);
+			}
+		}
+	}
+
+	protected void tryAllRecipes() {
+		// for each recipe, try performing the recipe (as many times as possible with the ingredients in the pot)
+		for (AlchemyRecipe recipe: AlchemyRecipeRegistry.values()) {
+			while (tryPerformRecipe(recipe)) {
+				AlchemicalBrewing.log(Level.INFO, "performed recipe " + recipe);
+
+				MutableText textToSend = new TranslatableText("message.alchemicalbrewing.recipefinished");
+				String[] translationKeyFragments = recipe.getIdentifier().toString().split(":");
+				String transKey = translationKeyFragments[0] + "." + translationKeyFragments[1];
+				textToSend.append(new TranslatableText("fluideffect.name." + transKey));
+				for (PlayerEntity player : this.getWorld().getPlayers()) {
+					
+					player.sendMessage(textToSend, false);
+				}
 			}
 		}
 	}
@@ -255,7 +266,6 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		super.toTag(tag);
 
 		// Save the current value of the number to the tag
-		tag.putBoolean("wasReady", this.wasReady);
 		tag.putInt("ticksToReady", this.ticksToReady);
 		tag.putInt("level", this.level);
 		
@@ -292,7 +302,6 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	@Override
 	public void fromTag(BlockState state, CompoundTag tag) {
 		super.fromTag(state, tag);
-		this.wasReady = tag.getBoolean("wasReady");
 		this.ticksToReady = tag.getInt("ticksToReady");
 		this.level = tag.getInt("level");
 		
@@ -308,5 +317,8 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 			CompoundTag compoundTag = listTag.getCompound(i);
 			this.readyItemsInPot.add(ItemStack.fromTag(compoundTag));
 		}
+	}
+	public List<ConcentratedFluidEffect> getEffects() {
+		return (List<ConcentratedFluidEffect>) this.effectsInPot.clone();
 	}
 }

@@ -4,7 +4,7 @@ package setadokalo.alchemicalbrewing.util;
    And I want my color class to actually, you know, be useful. Like, at all.
 */
 
-public class Color {
+public final class Color {
 	public static final Color WHITE = new Color(1.000, 1.000, 1.000);
 	public static final Color BLACK = new Color(0.000, 0.000, 0.000);
 	public static final Color RED   = new Color(1.000, 0.000, 0.000);

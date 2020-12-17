@@ -1,16 +1,20 @@
 package setadokalo.alchemicalbrewing.client;
 
+import org.apache.logging.log4j.Level;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.minecraft.client.color.world.BiomeColors;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.render.RenderLayer;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
+import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.util.Color;
+import setadokalo.alchemicalbrewing.util.FluidEffectUtil;
 
 @Environment(EnvType.CLIENT)
 public class AlchemicalBrewingClient implements ClientModInitializer {
@@ -18,12 +22,19 @@ public class AlchemicalBrewingClient implements ClientModInitializer {
    public void onInitializeClient() {
       BlockRenderLayerMap.INSTANCE.putBlock(AlchemicalBrewing.STONE_CRUCIBLE, RenderLayer.getTranslucent());
       ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> {
-         assert view != null;
-         return BiomeColors.getWaterColor(view, pos);
+			if (view != null && state.getBlock() == AlchemicalBrewing.STONE_CRUCIBLE) {
+				BlockEntity be = view.getBlockEntity(pos);
+				if (be == null) {
+					AlchemicalBrewing.log(Level.INFO, "Impossible condition reached! Crucible at " + pos.toString() + " had no block entity!");
+					return 0;
+				}
+				return FluidEffectUtil.getColorForEffects(((CrucibleEntity)view.getBlockEntity(pos)).getEffects(), null);
+			}
+			return 0;
 		}, AlchemicalBrewing.STONE_CRUCIBLE);
 		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
 			if (stack.getItem() instanceof FilledVial && tintIndex == 0) {
-				return FilledVial.getColorForStack(stack);
+				return FluidEffectUtil.getColorForStack(stack);
 			} else {
 				return Color.WHITE.asInt();
 			}

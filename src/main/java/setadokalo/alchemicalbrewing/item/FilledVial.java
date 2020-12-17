@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.api.EnvType;
@@ -18,11 +17,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.text.Text;
+import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
-import setadokalo.alchemicalbrewing.util.Color;
 
 public class FilledVial extends Item {
 
@@ -30,14 +30,17 @@ public class FilledVial extends Item {
 		super(new Settings().group(ItemGroup.BREWING).maxCount(64));
 	}
 
+	@Override
    public UseAction getUseAction(ItemStack stack) {
       return UseAction.DRINK;
 	}
 	
+	@Override
    public int getMaxUseTime(ItemStack stack) {
       return 32;
    }
 
+	@Override
    @Environment(EnvType.CLIENT)
    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
 		List<ConcentratedFluidEffect> effects = getEffects(stack);
@@ -45,17 +48,23 @@ public class FilledVial extends Item {
 			tooltip.add(effect.getTooltip());
 		}
 	}
+
+	@Override
+   public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+		if (user.canConsume(true)) {
+			user.setCurrentHand(hand);
+			return TypedActionResult.consume(user.getStackInHand(hand));
+		} else {
+			return TypedActionResult.fail(user.getStackInHand(hand));
+		}
+	}
 	
 	@Override
 	public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
 		List<ConcentratedFluidEffect> effects = getEffects(stack);
-		if (!world.isClient) {
-			if (user instanceof PlayerEntity) {
-				if (!((PlayerEntity)user).abilities.creativeMode) {
-					stack.decrement(1);
-					((PlayerEntity) user).giveItemStack(new ItemStack(AlchemicalBrewing.VIAL, 1));
-				}
-			}
+		if (!world.isClient && user instanceof PlayerEntity && !((PlayerEntity)user).abilities.creativeMode) {
+			stack.decrement(1);
+			((PlayerEntity) user).giveItemStack(new ItemStack(AlchemicalBrewing.VIAL, 1));
 		}
 
 		for (ConcentratedFluidEffect cEffect : effects) {
@@ -99,26 +108,5 @@ public class FilledVial extends Item {
 	}
 
 
-	public static int getColorForStack(ItemStack stack) {
-		if (stack.getItem() == AlchemicalBrewing.FILLED_VIAL) {
-			List<ConcentratedFluidEffect> effects = FilledVial.getEffects(stack);
-			// colors.add(Color.WATER);
-			Fraction totalConcentration = Fraction.ZERO;
-			for (ConcentratedFluidEffect effect : effects) {
-				totalConcentration = totalConcentration.add(effect.concentration);
-			}
-			Color totalColor = Color.BLACK;
-			double dTotalCon = totalConcentration.doubleValue();
-			for (ConcentratedFluidEffect effect : effects) {
-				Color currentColor = effect.effect.getColor(stack);
-				currentColor = currentColor.mul(effect.concentration.doubleValue() / dTotalCon);
-				totalColor = totalColor.add(currentColor);
-			}
-			if (dTotalCon < 1.0) {
-				totalColor = Color.WATER.mix(totalColor, dTotalCon);
-			}
-			return totalColor.asInt();
-		}
-		return 0;
-	}
+
 }

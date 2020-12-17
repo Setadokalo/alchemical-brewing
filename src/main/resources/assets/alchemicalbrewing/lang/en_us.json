@@ -4,5 +4,9 @@
 	"item.alchemicalbrewing.vial": "Vial",
 	"item.alchemicalbrewing.filled_vial": "Filled Vial",
 	"name.fluideffect.alchemicalbrewing.stew": "Stew",
-	"tooltip.fluideffect.alchemicalbrewing.stew": "Stew (%s parts)"
+	"tooltip.fluideffect.alchemicalbrewing.stew": "Stew (%s parts)",
+	"name.fluideffect.alchemicalbrewing.healing": "Healing",
+	"tooltip.fluideffect.alchemicalbrewing.healing": "Healing (%s parts)",
+	
+	"message.alchemicalbrewing.recipefinished": "Finished brewing recipe: "
 }

@@ -69,7 +69,7 @@ public class FluidEffect {
 	public void applyEffect(World world, Entity entity, Fraction concentration) {
 	}
 
-	public Color getColor(ItemStack stack) {
+	public Color getColor(@Nullable ItemStack stack) {
 		return Color.WHITE;
 	}
 
