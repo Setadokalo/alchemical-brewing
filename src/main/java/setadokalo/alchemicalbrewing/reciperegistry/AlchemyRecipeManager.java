@@ -35,16 +35,16 @@ public class AlchemyRecipeManager extends MultiJsonDataLoader implements Identif
 	protected void apply(Map<Identifier, List<JsonElement>> loader, ResourceManager manager, Profiler profiler) {
 		AlchemicalBrewing.log(Level.INFO, "Reload detected");
 		AlchemyRecipeRegistry.reset();
-		loader.forEach((id, jel) -> { // for each json file
-			jel.forEach((je) -> { // for each root element in those json files
+		loader.forEach((id, jel) ->  // for each json file
+			jel.forEach(je -> { // for each root element in those json files
 				try {
 					AlchemyRecipe recipe = AlchemyRecipe.fromJson(id, je.getAsJsonObject());
 					AlchemyRecipeRegistry.register(recipe);
 				} catch (Exception e) {
 					AlchemicalBrewing.log(Level.INFO, "Error loading alchemy recipe file " + id.toString() + " for reason '" + e.getMessage() + "'");
 				}
-			});
-		});
+			})
+		);
 	}
 	
 }

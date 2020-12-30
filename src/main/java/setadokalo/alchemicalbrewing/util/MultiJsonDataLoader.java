@@ -16,6 +16,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+/** Helper class to simplify the process of loading all JSON files.
+ * `prepare` takes the list of JSON files as input and calles 
+ * `tryParseJson` on each after sanitizing them,
+ */
 public abstract class MultiJsonDataLoader
 		extends SinglePreparationResourceReloadListener<Map<Identifier, List<JsonElement>>> {
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -23,7 +27,7 @@ public abstract class MultiJsonDataLoader
 	private final Gson gson;
 	private final String dataType;
 
-	public MultiJsonDataLoader(Gson gson, String dataType) {
+	protected MultiJsonDataLoader(Gson gson, String dataType) {
 		this.gson = gson;
 		this.dataType = dataType;
 	}
