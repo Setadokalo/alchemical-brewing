@@ -2,7 +2,7 @@ package setadokalo.alchemicalbrewing.util;
 
 import java.util.List;
 
-import org.apache.commons.lang3.math.Fraction;
+import org.apache.commons.math3.fraction.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.ItemStack;
@@ -11,10 +11,11 @@ import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 
 public class FluidEffectUtil {
+	private FluidEffectUtil() {}
+
 	public static int getColorForStack(ItemStack stack) {
 		if (stack.getItem() == AlchemicalBrewing.FILLED_VIAL) {
 			List<ConcentratedFluidEffect> effects = FilledVial.getEffects(stack);
-			// colors.add(Color.WATER);
 			return getColorForEffects(effects, stack);
 		}
 		return 0;
@@ -31,8 +32,8 @@ public class FluidEffectUtil {
 			currentColor = currentColor.mul(effect.concentration.doubleValue() / dTotalCon);
 			totalColor = totalColor.add(currentColor);
 		}
-		if (dTotalCon < 1.0) {
-			totalColor = Color.WATER.mix(totalColor, dTotalCon);
+		if (dTotalCon < 5.0) {
+			totalColor = Color.WATER.mix(totalColor, dTotalCon / 5.0);
 		}
 		return totalColor.asInt();
 	}

@@ -62,7 +62,7 @@ public class FilledVial extends Item {
 	@Override
 	public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
 		List<ConcentratedFluidEffect> effects = getEffects(stack);
-		if (!world.isClient && user instanceof PlayerEntity && !((PlayerEntity)user).abilities.creativeMode) {
+		if (!world.isClient && user instanceof PlayerEntity && !((PlayerEntity)user).getAbilities().creativeMode) {
 			stack.decrement(1);
 			((PlayerEntity) user).giveItemStack(new ItemStack(AlchemicalBrewing.VIAL, 1));
 		}

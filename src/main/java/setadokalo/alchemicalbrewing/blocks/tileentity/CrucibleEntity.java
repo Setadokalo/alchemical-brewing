@@ -3,7 +3,7 @@ package setadokalo.alchemicalbrewing.blocks.tileentity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.math.Fraction;
+import org.apache.commons.math3.fraction.Fraction;
 import org.apache.logging.log4j.Level;
 
 import net.minecraft.block.BlockState;
@@ -15,8 +15,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Tickable;
-
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
@@ -24,7 +24,7 @@ import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 import setadokalo.alchemicalbrewing.registry.AlchemyRecipeRegistry;
 
-public class CrucibleEntity extends BlockEntity implements Tickable {
+public class CrucibleEntity extends BlockEntity {
 	private class CookingItemStack {
 		ItemStack itemStack;
 		int cookTimeRemaining;
@@ -42,8 +42,8 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	/** The number of ticks until the crucible is ready to be used. */
 	private int ticksToReady = 0;
 	/** The maximum capacity of this crucible (allowing this one base class to be reused). */
-	public final int MAX_WATER_CAPACITY;
-	public final int MAX_INGREDIENT_CAPACITY;
+	public final int maxWaterCapacity;
+	public final int maxIngredientCapacity;
 	
 	// 4 seconds * 20 ticks per second = 160 ticks to cook
 	public static final int DEFAULT_COOK_TIME = 80;
@@ -61,17 +61,17 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		iIP.add(new CookingItemStack(stack, cookTime));
 	}
 
-	public CrucibleEntity(int maxWater, int maxIngredients) {
-		super(AlchemicalBrewing.crucibleBlockEntity);
+	public CrucibleEntity(BlockPos pos, BlockState state, int maxWater, int maxIngredients) {
+		super(AlchemicalBrewing.crucibleBlockEntity, pos, state);
 		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
-		MAX_WATER_CAPACITY = maxWater;
-		MAX_INGREDIENT_CAPACITY = maxIngredients;
+		maxWaterCapacity = maxWater;
+		maxIngredientCapacity = maxIngredients;
 	}
-	public CrucibleEntity() {
-		super(AlchemicalBrewing.crucibleBlockEntity);
+	public CrucibleEntity(BlockPos pos, BlockState state) {
+		super(AlchemicalBrewing.crucibleBlockEntity, pos, state);
 		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
-		MAX_WATER_CAPACITY = 9;
-		MAX_INGREDIENT_CAPACITY = 16;
+		maxWaterCapacity = 9;
+		maxIngredientCapacity = 16;
 	}
 	public void setLevel(int newLevel) {
 		if (newLevel > level) {
@@ -106,7 +106,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	public CompoundTag takeLevels(int amount) {
 		if (level < amount)
 			return null;
-		Fraction fracToTake = Fraction.getFraction(amount, level);
+		Fraction fracToTake = new Fraction(amount, level);
 		ConcentratedFluidEffect[] effectArray = new ConcentratedFluidEffect[effectsInPot.size()];
 		for (int i = 0; i < effectsInPot.size(); i++) {
 			ConcentratedFluidEffect effect = effectsInPot.get(i).split(fracToTake);
@@ -121,9 +121,9 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 
 
 	public int addLevels(int amount, boolean addLess) {
-		if (amount + level > this.MAX_WATER_CAPACITY) {
+		if (amount + level > this.maxWaterCapacity) {
 			if (addLess) {
-				amount = this.MAX_WATER_CAPACITY - level;
+				amount = this.maxWaterCapacity - level;
 			} else {
 				return 0;
 			}
@@ -138,7 +138,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 
 	// `stack` should be treated as consumed by this method; in rust terms, ownership is transferred here to this class.
 	public boolean addItem(ItemStack stack) {
-		if (this.isReady() && this.itemsInPot.size() < this.MAX_INGREDIENT_CAPACITY) {
+		if (this.isReady() && this.itemsInPot.size() < this.maxIngredientCapacity) {
 			this.add(itemsInPot, stack);
 			AlchemicalBrewing.log(Level.INFO, "Added item " + stack.getItem().toString() + " to pot");
 			markDirty();
@@ -178,19 +178,22 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	}
 
 
-	@Override
-	public void tick() {
-		if (tickToReady()) {
+	public static void tick(BlockEntity uEntity) {
+		if (!(uEntity instanceof CrucibleEntity)) {
+			return;
+		}
+		CrucibleEntity entity = (CrucibleEntity) uEntity;
+		if (entity.tickToReady()) {
 			ArrayList<CookingItemStack> itemsToRemove = new ArrayList<>();
-			for (CookingItemStack cookingItem: this.itemsInPot) {
+			for (CookingItemStack cookingItem: entity.itemsInPot) {
 				if (cookingItem.tickCooking()) {
 					itemsToRemove.add(cookingItem);
-					this.readyItemsInPot.add(cookingItem.itemStack);
-					tryAllRecipes();
+					entity.readyItemsInPot.add(cookingItem.itemStack);
+					entity.tryAllRecipes();
 				}
 			}
 			for (CookingItemStack item : itemsToRemove) {
-				this.itemsInPot.remove(item);
+				entity.itemsInPot.remove(item);
 			}
 		}
 	}
@@ -272,7 +275,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		ListTag listTag = new ListTag();
 
 		for(int i = 0; i < this.itemsInPot.size(); ++i) {
-			CookingItemStack cookingItem = (CookingItemStack)this.itemsInPot.get(i);
+			CookingItemStack cookingItem = this.itemsInPot.get(i);
 			CompoundTag compoundTag = new CompoundTag();
 			cookingItem.itemStack.toTag(compoundTag);
 			compoundTag.putInt("cookTimeRemaining", cookingItem.cookTimeRemaining);
@@ -285,7 +288,7 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 		ListTag readyTag = new ListTag();
 
 		for(int i = 0; i < this.itemsInPot.size(); ++i) {
-			ItemStack cookingItem = (ItemStack)this.readyItemsInPot.get(i);
+			ItemStack cookingItem = this.readyItemsInPot.get(i);
 			CompoundTag compoundTag = new CompoundTag();
 			cookingItem.toTag(compoundTag);
 			readyTag.add(compoundTag);
@@ -300,8 +303,8 @@ public class CrucibleEntity extends BlockEntity implements Tickable {
 	
 	// Deserialize the BlockEntity
 	@Override
-	public void fromTag(BlockState state, CompoundTag tag) {
-		super.fromTag(state, tag);
+	public void fromTag(CompoundTag tag) {
+		super.fromTag(tag);
 		this.ticksToReady = tag.getInt("ticksToReady");
 		this.level = tag.getInt("level");
 		

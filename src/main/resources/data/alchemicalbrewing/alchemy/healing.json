@@ -1,23 +1,11 @@
 {
 	"ingredients": [
 	  {
-		 "item": "minecraft:rabbit",
+		 "item": "minecraft:honey_bottle",
 		 "count": 1
 	  },
 	  {
 		 "item": "minecraft:apple",
-		 "count": 1
-	  },
-	  {
-		 "item": "minecraft:stone",
-		 "count": 1
-	  },
-	  {
-		 "item": "minecraft:potato",
-		 "count": 1
-	  },
-	  {
-		 "item": "minecraft:brown_mushroom",
 		 "count": 1
 	  }
 	],

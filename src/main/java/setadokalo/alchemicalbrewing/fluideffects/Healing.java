@@ -1,6 +1,6 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
-import org.apache.commons.lang3.math.Fraction;
+import org.apache.commons.math3.fraction.Fraction;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -10,7 +10,7 @@ import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.util.Color;
 
 public class Healing extends FluidEffect {
-	public static final Fraction HEALING_BASE = Fraction.getFraction(3, 1);
+	public static final Fraction HEALING_BASE = new Fraction(3, 1);
 	public static final Color HEALING_COLOR = new Color(255, 20, 20);
 
 	public Healing(Identifier id) {
@@ -23,7 +23,7 @@ public class Healing extends FluidEffect {
 	@Override
 	public void applyEffect(World world, Entity entity, Fraction fConcentration) {
 		if (entity instanceof LivingEntity) {
-			((LivingEntity)entity).heal(fConcentration.multiplyBy(HEALING_BASE).getProperWhole());
+			((LivingEntity)entity).heal(fConcentration.multiply(HEALING_BASE).intValue());
 		}
 	}
 

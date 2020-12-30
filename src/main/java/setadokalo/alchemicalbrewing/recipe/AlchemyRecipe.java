@@ -30,12 +30,13 @@ public final class AlchemyRecipe {
 	return identifier;
 	}
 
+	private static final String INGR_KEY = "ingredients";
 	public static AlchemyRecipe fromJson(Identifier id, JsonObject json) {
-		if (!json.has("ingredients") || !json.get("ingredients").isJsonArray()) {
+		if (!json.has(INGR_KEY) || !json.get(INGR_KEY).isJsonArray()) {
 			throw new JsonParseException(
 					AlchemicalBrewing.MOD_NAME + " json array requires array with key \"ingredients\".");
 		}
-		JsonArray ingredientArray = json.getAsJsonArray("ingredients");
+		JsonArray ingredientArray = json.getAsJsonArray(INGR_KEY);
 		Item[] ingredients = new Item[ingredientArray.size()];
 		for (int i = 0; i < ingredients.length; i++) {
 			JsonObject ingredientDefinition = ingredientArray.get(i).getAsJsonObject();

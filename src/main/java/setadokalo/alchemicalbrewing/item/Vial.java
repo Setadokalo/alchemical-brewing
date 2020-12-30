@@ -22,6 +22,7 @@ public class Vial extends Item {
 		super(new Settings().group(ItemGroup.BREWING));
 	}
 
+	@Override
 	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
       ItemStack itemStack = user.getStackInHand(hand);
 		HitResult hitResult = raycast(world, user, RaycastContext.FluidHandling.SOURCE_ONLY);
@@ -37,13 +38,9 @@ public class Vial extends Item {
 				if (world.getFluidState(blockPos).isIn(FluidTags.WATER)) {
 					world.playSound(user, user.getX(), user.getY(), user.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.NEUTRAL, 1.0F, 1.0F);
 
-					if (!world.isClient) {
-						if (user instanceof PlayerEntity) {
-							if (!((PlayerEntity)user).abilities.creativeMode) {
-								itemStack.decrement(1);
-								((PlayerEntity) user).giveItemStack(new ItemStack(AlchemicalBrewing.FILLED_VIAL, 1));
-							}
-						}
+					if (!world.isClient && user instanceof PlayerEntity && !user.getAbilities().creativeMode) {
+						itemStack.decrement(1);
+						user.giveItemStack(new ItemStack(AlchemicalBrewing.FILLED_VIAL, 1));
 					}
 					return TypedActionResult.success(itemStack, world.isClient());
 				}

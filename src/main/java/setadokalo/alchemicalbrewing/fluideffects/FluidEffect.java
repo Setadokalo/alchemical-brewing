@@ -1,6 +1,6 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
-import org.apache.commons.lang3.math.Fraction;
+import org.apache.commons.math3.fraction.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.Entity;

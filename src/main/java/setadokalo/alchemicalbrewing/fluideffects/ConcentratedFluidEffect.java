@@ -2,14 +2,14 @@ package setadokalo.alchemicalbrewing.fluideffects;
 
 import com.google.gson.JsonObject;
 
-import org.apache.commons.lang3.math.Fraction;
+import org.apache.commons.math3.fraction.Fraction;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
+import setadokalo.alchemicalbrewing.util.FractionUtil;
 
-//TODO: Rename this to better reflect that this is an /instance/ of a fluid effect
 // while a `FluidEffect` instance is a shared instance among all potions
 /**
  * A single fluid effect in a container, and it's intensity.
@@ -25,6 +25,7 @@ public class ConcentratedFluidEffect {
 		concentration = conc;
 	}
 
+	private static final String CONTAG = "Concentration";
 	/**
 	 * Constructs a `ConcentratedFluidEffect` instance from an NBT tag.
 	 * (Used to get Effect data from `ItemStack`s)
@@ -34,11 +35,11 @@ public class ConcentratedFluidEffect {
 		if (effect == null) {
 			return null;
 		}
-		if (compoundTag.contains("Concentration", 8) ) {
-			String concentration = compoundTag.getString("Concentration");
-			return new ConcentratedFluidEffect(effect, Fraction.getFraction(concentration));
+		if (compoundTag.contains(CONTAG, 8) ) {
+			String concentration = compoundTag.getString(CONTAG);
+			return new ConcentratedFluidEffect(effect, FractionUtil.fromString(concentration));
 		} else {
-			return new ConcentratedFluidEffect(effect, Fraction.getFraction(1, 1));
+			return new ConcentratedFluidEffect(effect, Fraction.ONE);
 		}
 	}
 
@@ -49,7 +50,7 @@ public class ConcentratedFluidEffect {
 	public static ConcentratedFluidEffect fromJson(JsonObject jObject) {
 		FluidEffect effect = AlchemyEffectRegistry.get(Identifier.tryParse(jObject.get("effect").getAsString()));
 		String concentrationString = jObject.get("concentration").getAsString();
-		return new ConcentratedFluidEffect(effect, Fraction.getFraction(concentrationString));
+		return new ConcentratedFluidEffect(effect, FractionUtil.fromString(concentrationString));
 	}
 
 	public ConcentratedFluidEffect clone() {
@@ -58,18 +59,23 @@ public class ConcentratedFluidEffect {
 
 	public void toTag(CompoundTag tag) {
 		this.effect.toTag(tag);
-		tag.putString("Concentration", this.concentration.toString());
+		tag.putString(CONTAG, this.concentration.toString());
 	}
 
 	public Text getTooltip() {
-		return this.effect.getTooltip(this.concentration.toProperString());
+		return this.effect.getTooltip(FractionUtil.toProperString(this.concentration));
 	}
 
 	public ConcentratedFluidEffect split(Fraction fracToTake) {
 		double dFrac = fracToTake.doubleValue();
 		if (dFrac < 0.0 || dFrac > 1.0)
 			throw new IllegalArgumentException("fracToTake must be between 0 and 1");
-		Fraction removed = this.concentration.multiplyBy(fracToTake);
+		Fraction removed;
+		try {
+			removed = this.concentration.multiply(fracToTake);
+		} catch (ArithmeticException e) {
+			removed = Fraction.ZERO;
+		}
 		ConcentratedFluidEffect newEffect = new ConcentratedFluidEffect(this.effect, removed);
 		this.concentration = this.concentration.subtract(removed);
 		return newEffect;
