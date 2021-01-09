@@ -3,7 +3,6 @@ package setadokalo.alchemicalbrewing.item;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -19,7 +18,7 @@ import net.minecraft.util.hit.BlockHitResult;
 public class Vial extends Item {
 
 	public Vial() {
-		super(new Settings().group(ItemGroup.BREWING));
+		super(new Settings().group(AlchemicalBrewing.ITEM_GROUP));
 	}
 
 	@Override

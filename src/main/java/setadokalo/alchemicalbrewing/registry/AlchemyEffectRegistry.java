@@ -9,6 +9,8 @@ import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
 
 public class AlchemyEffectRegistry {
 
+	private AlchemyEffectRegistry() {}
+
 	private static HashMap<Identifier, FluidEffect> idToFluidEffect = new HashMap<>();
 
 	public static FluidEffect register(FluidEffect alchemyRecipe) {
@@ -49,8 +51,7 @@ public class AlchemyEffectRegistry {
 			throw new IllegalArgumentException(
 					"Could not get alchemyRecipe from id '" + id.toString() + "', as it was not registered!");
 		}
-		FluidEffect alchemyRecipe = idToFluidEffect.get(id);
-		return alchemyRecipe;
+		return idToFluidEffect.get(id);
 	}
 
 	public static boolean contains(Identifier id) {

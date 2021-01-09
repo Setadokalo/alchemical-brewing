@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 
 public class AlchemyRecipeRegistry {
+	private AlchemyRecipeRegistry() {}
 
 	private static HashMap<Identifier, AlchemyRecipe> idToAlchemyRecipe = new HashMap<>();
 
@@ -49,8 +50,7 @@ public class AlchemyRecipeRegistry {
 			throw new IllegalArgumentException(
 					"Could not get alchemyRecipe from id '" + id.toString() + "', as it was not registered!");
 		}
-		AlchemyRecipe alchemyRecipe = idToAlchemyRecipe.get(id);
-		return alchemyRecipe;
+		return idToAlchemyRecipe.get(id);
 	}
 
 	public static boolean contains(Identifier id) {

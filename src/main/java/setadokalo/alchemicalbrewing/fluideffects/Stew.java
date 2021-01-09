@@ -25,7 +25,7 @@ public class Stew extends FluidEffect {
 	@Override
 	public void applyEffect(World world, Entity entity, Fraction fConcentration) {
 		if (entity instanceof PlayerEntity) {
-			((PlayerEntity)entity).getHungerManager().add((int)(fConcentration.multiply(STEW_BASE_HUNGER).intValue()), 0.75f);
+			((PlayerEntity)entity).getHungerManager().add(fConcentration.multiply(STEW_BASE_HUNGER).intValue(), 0.75f);
 		}
 	}
 

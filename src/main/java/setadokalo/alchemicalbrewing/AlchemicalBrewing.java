@@ -4,7 +4,9 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import setadokalo.alchemicalbrewing.item.Essence;
 import setadokalo.alchemicalbrewing.item.FilledVial;
+import setadokalo.alchemicalbrewing.item.MortarAndPestle;
 import setadokalo.alchemicalbrewing.item.Vial;
 import setadokalo.alchemicalbrewing.reciperegistry.AlchemyRecipeManager;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
@@ -33,18 +35,29 @@ public class AlchemicalBrewing implements ModInitializer {
 
 	public static final String MODID = "alchemicalbrewing";
 	public static final String MOD_NAME = "Alchemical Brewing";
-	private static final String LOG_NAME = "[" + MOD_NAME + "] {}";
+	private static final String LOG_STRING = "[" + MOD_NAME + "] {}";
 
 	public static final Block STONE_CRUCIBLE = new Crucible();
 	public static BlockEntityType<CrucibleEntity> crucibleBlockEntity;
 	
 	public static final Item VIAL = new Vial();
 	public static final Item FILLED_VIAL = new FilledVial();
+	public static final Item MORTAR_AND_PESTLE = new MortarAndPestle();
+	// Essences will mostly be identical in functionality (i.e. none) and simply exist as crafting ingredients
+	public static final Item HEALING_ESSENCE = new Essence();
+	public static final Item PURITY_ESSENCE = new Essence();
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(
 		new Identifier(MODID, "general"))
 		.icon(() -> new ItemStack(STONE_CRUCIBLE))
-		.appendItems(stacks -> stacks.add(new ItemStack(STONE_CRUCIBLE)))
+		.appendItems(stacks -> {
+			stacks.add(new ItemStack(STONE_CRUCIBLE));
+			stacks.add(new ItemStack(VIAL));
+			stacks.add(new ItemStack(FILLED_VIAL));
+			stacks.add(new ItemStack(MORTAR_AND_PESTLE));
+			stacks.add(new ItemStack(HEALING_ESSENCE));
+			stacks.add(new ItemStack(PURITY_ESSENCE));
+		})
 		.build();
 	
 	
@@ -62,7 +75,7 @@ public class AlchemicalBrewing implements ModInitializer {
 		Registry.register(
 			Registry.ITEM,
 			new Identifier(MODID, "stone_crucible"),
-			new BlockItem(STONE_CRUCIBLE, new Item.Settings().group(ItemGroup.BREWING))
+			new BlockItem(STONE_CRUCIBLE, new Item.Settings().group(AlchemicalBrewing.ITEM_GROUP))
 		);
 		Registry.register(
 			Registry.ITEM,
@@ -75,10 +88,28 @@ public class AlchemicalBrewing implements ModInitializer {
 			FILLED_VIAL
 		);
 
-		AlchemyEffectRegistry.register(new Stew(new Identifier(MODID, "stew"), "fluideffect." + MODID + ".stew"));
-		AlchemyEffectRegistry.register(new Healing(new Identifier(MODID, "healing"), "fluideffect." + MODID + ".healing"));
+		Registry.register(
+			Registry.ITEM,
+			new Identifier(MODID, "mortar_and_pestle"),
+			MORTAR_AND_PESTLE
+		);
+
+		Registry.register(
+			Registry.ITEM,
+			new Identifier(MODID, "healing_essence"),
+			HEALING_ESSENCE
+		);
+
+		Registry.register(
+			Registry.ITEM,
+			new Identifier(MODID, "purity_essence"),
+			PURITY_ESSENCE
+		);
+
+		AlchemyEffectRegistry.register(new Stew(new Identifier(MODID, "stew")));
+		AlchemyEffectRegistry.register(new Healing(new Identifier(MODID, "healing")));
 	}
 	public static void log(Level level, String message){
-		LOGGER.log(level, LOG_NAME, message);
+		LOGGER.log(level, LOG_STRING, message);
 	}
 }

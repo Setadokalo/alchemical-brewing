@@ -12,7 +12,6 @@ import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -27,7 +26,7 @@ import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
 public class FilledVial extends Item {
 
 	public FilledVial() {
-		super(new Settings().group(ItemGroup.BREWING).maxCount(64));
+		super(new Settings().group(AlchemicalBrewing.ITEM_GROUP).maxCount(16));
 	}
 
 	@Override
@@ -106,7 +105,6 @@ public class FilledVial extends Item {
 		}
 		return effectList;
 	}
-
 
 
 }

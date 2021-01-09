@@ -47,16 +47,24 @@ public class FluidEffect {
 	 * @param partialKey the part of the translation key after `name` or `tooltip`
 	 */
 	public FluidEffect(Identifier id, @Nullable String partialKey, EffectType type) {
-		assert id != null;
+		if (id == null) {
+			throw new NullPointerException("id must not be null");
+		}
 		identifier = id;
 		partialtranslationKey = partialKey;
-		assert type != null;
+		if (type == null) {
+			throw new NullPointerException("type must not be null");
+		}
 		this.type = type;
 	}
 
 	public FluidEffect(Identifier id, EffectType type) {
 		identifier = id;
 		partialtranslationKey = null;
+		if (type == null) {
+			throw new NullPointerException("type must not be null");
+		}
+		this.type = type;
 	}
 
 	/**
@@ -93,19 +101,21 @@ public class FluidEffect {
 		return this.identifier;
 	}
 
+
+	private static final String ID = "identifier";
 	/**
 	 * Constructs a `ConcentratedFluidEffect` instance from an NBT tag.
 	 * (Used to get Effect data from `ItemStack`s)
 	 */
 	public static FluidEffect fromTag(CompoundTag compoundTag) {
-		if (compoundTag.contains("identifier", 8)) {
-			String id = compoundTag.getString("identifier");
+		if (compoundTag.contains(ID, 8)) {
+			String id = compoundTag.getString(ID);
 			return AlchemyEffectRegistry.get(new Identifier(id));
 		}
 		return null;
 	}
 
 	public void toTag(CompoundTag tag) {
-		tag.putString("identifier", this.identifier.toString());
+		tag.putString(ID, this.identifier.toString());
 	}
 }

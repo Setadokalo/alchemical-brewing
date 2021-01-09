@@ -6,8 +6,11 @@ import org.apache.commons.math3.fraction.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 
 public class FluidEffectUtil {
@@ -36,5 +39,21 @@ public class FluidEffectUtil {
 			totalColor = Color.WATER.mix(totalColor, dTotalCon / 5.0);
 		}
 		return totalColor.asInt();
+	}
+
+	public static CompoundTag getFullTagForEffects(ConcentratedFluidEffect... effects) {
+		CompoundTag tag = new CompoundTag();
+		ListTag lEffects = FilledVial.getTagForEffects(effects);
+		tag.put("Effects", lEffects);
+		return tag;
+	}
+	public static ItemStack getDefaultVialForEffects(FluidEffect... effects) {
+		ItemStack stack = new ItemStack(AlchemicalBrewing.FILLED_VIAL);
+		ConcentratedFluidEffect[] cEffects = new ConcentratedFluidEffect[effects.length];
+		for (int i = 0; i < effects.length; i++) {
+			cEffects[i] = new ConcentratedFluidEffect(effects[i], Fraction.ONE);
+		}
+		stack.setTag(getFullTagForEffects(cEffects));
+		return stack;
 	}
 }
