@@ -1,7 +1,0 @@
-{
-    "parent": "item/generated",
-    "textures": {
-        "layer0": "alchemicalbrewing:item/vial_overlay",
-        "layer1": "alchemicalbrewing:item/vial"
-    }
-}

@@ -1,5 +1,7 @@
 # User-specific stuff
 .idea/
+# not sure what makes this but it shouldn't be there
+bin/
 
 *.iml
 *.ipr
