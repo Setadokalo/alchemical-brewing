@@ -2,13 +2,13 @@
 	"type": "minecraft:crafting_shapeless",
 	"ingredients": [
 	  {
-		 "item": "minecraft:black_dye"
+		 "item": "alchemicalbrewing:mortar_and_pestle"
 	  },
 	  {
-		 "item": "minecraft:white_wool"
+		 "item": "minecraft:amethyst_shard"
 	  }
 	],
 	"result": {
-	  "item": "minecraft:black_wool"
+	  "item": "alchemicalbrewing:healing_essence"
 	}
 }

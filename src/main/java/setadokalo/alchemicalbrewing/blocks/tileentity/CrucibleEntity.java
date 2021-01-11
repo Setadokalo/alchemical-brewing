@@ -218,8 +218,8 @@ public class CrucibleEntity extends BlockEntity {
 	}
 
 	protected boolean tryPerformRecipe(AlchemyRecipe recipe) {
-		ArrayList<ItemStack> list = (ArrayList<ItemStack>) this.readyItemsInPot.clone();
-		ArrayList<ItemStack> foundItems = new ArrayList<>();
+		List<ItemStack> list = (List<ItemStack>) this.readyItemsInPot.clone();
+		List<ItemStack> foundItems = new ArrayList<>();
 		for (Item requiredItem: recipe.ingredients) {
 			if (!isItemInPot(list, requiredItem, foundItems))
 				return false;
