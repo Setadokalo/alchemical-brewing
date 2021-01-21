@@ -27,7 +27,7 @@ import net.minecraft.util.registry.Registry;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 import setadokalo.alchemicalbrewing.fluideffects.Healing;
-import setadokalo.alchemicalbrewing.fluideffects.Stew;
+import setadokalo.alchemicalbrewing.fluideffects.Saturation;
 
 public class AlchemicalBrewing implements ModInitializer {
 
@@ -106,7 +106,7 @@ public class AlchemicalBrewing implements ModInitializer {
 			PURITY_ESSENCE
 		);
 
-		AlchemyEffectRegistry.register(new Stew(new Identifier(MODID, "stew")));
+		AlchemyEffectRegistry.register(new Saturation(new Identifier(MODID, "stew")));
 		AlchemyEffectRegistry.register(new Healing(new Identifier(MODID, "healing")));
 	}
 	public static void log(Level level, String message){

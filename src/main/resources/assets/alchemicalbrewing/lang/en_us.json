@@ -1,15 +1,24 @@
 {
-	"block.alchemicalbrewing.stone_crucible": "Stone Crucible",
 	"itemGroup.alchemicalbrewing.general": "Alchemical Brewing",
+
+	"block.alchemicalbrewing.stone_crucible": "Stone Crucible",
+	"block.alchemicalbrewing.iron_crucible": "Iron Crucible",
+	"block.alchemicalbrewing.reenforced_crucible": "Reenforced Iron Crucible",
+
+	"block.alchemicalbrewing.wooden_mortar_and_pestle": "Wooden Mortar And Pestle",
+	"block.alchemicalbrewing.stone_mortar_and_pestle": "Stone Mortar And Pestle",
+
 	"item.alchemicalbrewing.vial": "Vial",
 	"item.alchemicalbrewing.filled_vial": "Filled Vial",
-	"item.alchemicalbrewing.mortar_and_pestle": "Mortar And Pestle",
+
 	"item.alchemicalbrewing.healing_essence": "Essence of Healing",
 	"item.alchemicalbrewing.purity_essence": "Essence of Purity",
-	"name.fluideffect.alchemicalbrewing.stew": "Stew",
-	"tooltip.fluideffect.alchemicalbrewing.stew": "Stew (%s parts)",
-	"name.fluideffect.alchemicalbrewing.healing": "Healing",
-	"tooltip.fluideffect.alchemicalbrewing.healing": "Healing (%s parts)",
+
+	"name.fluid.alchemicalbrewing.stew": "Stew",
+	"tooltip.fluid.alchemicalbrewing.stew": "Stew (%s parts)",
+
+	"name.fluid.alchemicalbrewing.healing": "Healing",
+	"tooltip.fluid.alchemicalbrewing.healing": "Healing (%s parts)",
 	
 	"message.alchemicalbrewing.recipefinished": "Finished brewing recipe: "
 }

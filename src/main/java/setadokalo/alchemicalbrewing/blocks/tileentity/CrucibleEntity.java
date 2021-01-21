@@ -20,7 +20,7 @@ import net.minecraft.util.math.BlockPos;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
-import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 import setadokalo.alchemicalbrewing.registry.AlchemyRecipeRegistry;
@@ -46,14 +46,14 @@ public class CrucibleEntity extends BlockEntity {
 	public final int maxWaterCapacity;
 	public final int maxIngredientCapacity;
 	
-	// 4 seconds * 20 ticks per second = 160 ticks to cook
+	// 4 seconds * 20 ticks per second = 80 ticks to cook
 	public static final int DEFAULT_COOK_TIME = 80;
 	/** The current number of bottles of water in this crucible. One bucket = 9 bottles, because how TF does
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
 	private int level = 0;
 	private ArrayList<CookingItemStack> itemsInPot = new ArrayList<>();
 	private ArrayList<ItemStack> readyItemsInPot = new ArrayList<>();
-	private ArrayList<ConcentratedFluidEffect> effectsInPot = new ArrayList<>();
+	private ArrayList<ConcentratedFluid> effectsInPot = new ArrayList<>();
 
 	void add(ArrayList<CookingItemStack> iIP, ItemStack stack) {
 		iIP.add(new CookingItemStack(stack, DEFAULT_COOK_TIME));
@@ -108,13 +108,13 @@ public class CrucibleEntity extends BlockEntity {
 		if (level < amount)
 			return null;
 		Fraction fracToTake = new Fraction(amount, level);
-		ConcentratedFluidEffect[] effectArray = new ConcentratedFluidEffect[effectsInPot.size()];
+		ConcentratedFluid[] effectArray = new ConcentratedFluid[effectsInPot.size()];
 		for (int i = 0; i < effectsInPot.size(); i++) {
-			ConcentratedFluidEffect effect = effectsInPot.get(i).split(fracToTake);
+			ConcentratedFluid effect = effectsInPot.get(i).split(fracToTake);
 			effectArray[i] = effect;
 		}
 		CompoundTag tag = new CompoundTag();
-		tag.put("Effects", FilledVial.getTagForEffects(effectArray));
+		tag.put("Effects", FilledVial.getTagForFluids(effectArray));
 		this.level -= amount;
 		this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.LEVEL, level), 2);
 		return tag;
@@ -228,17 +228,17 @@ public class CrucibleEntity extends BlockEntity {
 			this.readyItemsInPot.remove(item);
 		}
 
-		for (ConcentratedFluidEffect result : recipe.results) {
+		for (ConcentratedFluid result : recipe.results) {
 			this.addEffectToPot(result);
 		}
 
 		return true;
 	}
 
-	public void addEffectToPot(ConcentratedFluidEffect effectToAdd) {
+	public void addEffectToPot(ConcentratedFluid effectToAdd) {
 		boolean resultFoundInPot = false;
-		for (ConcentratedFluidEffect effectInPot : this.effectsInPot) {
-			if (effectInPot.effect == effectToAdd.effect) {
+		for (ConcentratedFluid effectInPot : this.effectsInPot) {
+			if (effectInPot.fluid == effectToAdd.fluid) {
 				effectInPot.concentration = effectInPot.concentration.add(effectToAdd.concentration);
 				resultFoundInPot = true;
 				break;
@@ -322,7 +322,7 @@ public class CrucibleEntity extends BlockEntity {
 			this.readyItemsInPot.add(ItemStack.fromTag(compoundTag));
 		}
 	}
-	public List<ConcentratedFluidEffect> getEffects() {
-		return (List<ConcentratedFluidEffect>) this.effectsInPot.clone();
+	public List<ConcentratedFluid> getEffects() {
+		return (List<ConcentratedFluid>) this.effectsInPot.clone();
 	}
 }

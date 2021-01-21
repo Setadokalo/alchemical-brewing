@@ -21,7 +21,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
-import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 
 public class FilledVial extends Item {
 
@@ -42,8 +42,8 @@ public class FilledVial extends Item {
 	@Override
    @Environment(EnvType.CLIENT)
    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-		List<ConcentratedFluidEffect> effects = getEffects(stack);
-		for (ConcentratedFluidEffect effect : effects) {
+		List<ConcentratedFluid> effects = getFluids(stack);
+		for (ConcentratedFluid effect : effects) {
 			tooltip.add(effect.getTooltip());
 		}
 	}
@@ -60,35 +60,35 @@ public class FilledVial extends Item {
 	
 	@Override
 	public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
-		List<ConcentratedFluidEffect> effects = getEffects(stack);
+		List<ConcentratedFluid> effects = getFluids(stack);
 		if (!world.isClient && user instanceof PlayerEntity && !((PlayerEntity)user).getAbilities().creativeMode) {
 			stack.decrement(1);
 			((PlayerEntity) user).giveItemStack(new ItemStack(AlchemicalBrewing.VIAL, 1));
 		}
 
-		for (ConcentratedFluidEffect cEffect : effects) {
-			cEffect.effect.applyEffect(world, user, cEffect.concentration);
+		for (ConcentratedFluid cEffect : effects) {
+			cEffect.applyEffects(world, user);
 		}
 		return stack;
    }
 
-	public static List<ConcentratedFluidEffect> getEffects(ItemStack stack) {
-		return getEffectsForTag(stack.getTag());
+	public static List<ConcentratedFluid> getFluids(ItemStack stack) {
+		return getFluidsForTag(stack.getTag());
 	}
 
-   public static List<ConcentratedFluidEffect> getEffectsForTag(@Nullable CompoundTag tag) {
-      List<ConcentratedFluidEffect> list = Lists.newArrayList();
-      getEffectsForTag(tag, list);
+   public static List<ConcentratedFluid> getFluidsForTag(@Nullable CompoundTag tag) {
+      List<ConcentratedFluid> list = Lists.newArrayList();
+      getFluidsForTag(tag, list);
       return list;
    }
 
-	public static void getEffectsForTag(CompoundTag tag, List<ConcentratedFluidEffect> list) {
+	public static void getFluidsForTag(CompoundTag tag, List<ConcentratedFluid> list) {
       if (tag != null && tag.contains("Effects", 9)) {
          ListTag listTag = tag.getList("Effects", 10);
 
          for(int i = 0; i < listTag.size(); ++i) {
 				CompoundTag compoundTag = listTag.getCompound(i);
-				ConcentratedFluidEffect effect = ConcentratedFluidEffect.fromTag(compoundTag);
+				ConcentratedFluid effect = ConcentratedFluid.fromTag(compoundTag);
             if (effect != null) {
                list.add(effect);
             }
@@ -96,14 +96,14 @@ public class FilledVial extends Item {
       }
 	}
 
-	public static ListTag getTagForEffects(ConcentratedFluidEffect... effects) {
-		ListTag effectList = new ListTag();
-		for (ConcentratedFluidEffect effect : effects) {
+	public static ListTag getTagForFluids(ConcentratedFluid... fluids) {
+		ListTag fluidList = new ListTag();
+		for (ConcentratedFluid fluid : fluids) {
 			CompoundTag tag = new CompoundTag();
-			effect.toTag(tag);
-			effectList.add(tag);
+			fluid.toTag(tag);
+			fluidList.add(tag);
 		}
-		return effectList;
+		return fluidList;
 	}
 
 

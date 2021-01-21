@@ -9,8 +9,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
-import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
-import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
+import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
+import setadokalo.alchemicalbrewing.fluids.AlchemyFluid;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 
 public class FluidEffectUtil {
@@ -18,20 +18,20 @@ public class FluidEffectUtil {
 
 	public static int getColorForStack(ItemStack stack) {
 		if (stack.getItem() == AlchemicalBrewing.FILLED_VIAL) {
-			List<ConcentratedFluidEffect> effects = FilledVial.getEffects(stack);
+			List<ConcentratedFluid> effects = FilledVial.getFluids(stack);
 			return getColorForEffects(effects, stack);
 		}
 		return 0;
 	}
-	public static int getColorForEffects(List<ConcentratedFluidEffect> effects, @Nullable ItemStack stack) {
+	public static int getColorForEffects(List<ConcentratedFluid> effects, @Nullable ItemStack stack) {
 		Fraction totalConcentration = Fraction.ZERO;
-		for (ConcentratedFluidEffect effect : effects) {
+		for (ConcentratedFluid effect : effects) {
 			totalConcentration = totalConcentration.add(effect.concentration);
 		}
 		Color totalColor = Color.BLACK;
 		double dTotalCon = totalConcentration.doubleValue();
-		for (ConcentratedFluidEffect effect : effects) {
-			Color currentColor = effect.effect.getColor(stack);
+		for (ConcentratedFluid effect : effects) {
+			Color currentColor = effect.fluid.getColor(stack);
 			currentColor = currentColor.mul(effect.concentration.doubleValue() / dTotalCon);
 			totalColor = totalColor.add(currentColor);
 		}
@@ -41,17 +41,17 @@ public class FluidEffectUtil {
 		return totalColor.asInt();
 	}
 
-	public static CompoundTag getFullTagForEffects(ConcentratedFluidEffect... effects) {
+	public static CompoundTag getFullTagForEffects(ConcentratedFluid... effects) {
 		CompoundTag tag = new CompoundTag();
-		ListTag lEffects = FilledVial.getTagForEffects(effects);
+		ListTag lEffects = FilledVial.getTagForFluids(effects);
 		tag.put("Effects", lEffects);
 		return tag;
 	}
-	public static ItemStack getDefaultVialForEffects(FluidEffect... effects) {
+	public static ItemStack getDefaultVialForEffects(AlchemyFluid... effects) {
 		ItemStack stack = new ItemStack(AlchemicalBrewing.FILLED_VIAL);
-		ConcentratedFluidEffect[] cEffects = new ConcentratedFluidEffect[effects.length];
+		ConcentratedFluid[] cEffects = new ConcentratedFluid[effects.length];
 		for (int i = 0; i < effects.length; i++) {
-			cEffects[i] = new ConcentratedFluidEffect(effects[i], Fraction.ONE);
+			cEffects[i] = new ConcentratedFluid(effects[i], Fraction.ONE);
 		}
 		stack.setTag(getFullTagForEffects(cEffects));
 		return stack;

@@ -40,7 +40,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
-import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 
 public class Crucible extends BlockWithEntity {
@@ -138,7 +138,7 @@ public class Crucible extends BlockWithEntity {
 	private ActionResult useFilledVial(World world, ItemStack itemStack, PlayerEntity player, Hand hand,
 			CrucibleEntity entity) {
 		if (!world.isClient && entity.addLevels(1, false) == 1) {
-			for (ConcentratedFluidEffect effect : FilledVial.getEffects(itemStack))
+			for (ConcentratedFluid effect : FilledVial.getFluids(itemStack))
 				entity.addEffectToPot(effect);
 			if (!player.getAbilities().creativeMode) {
 				itemStack.decrement(1);		

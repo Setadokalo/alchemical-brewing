@@ -11,16 +11,16 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
-import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluidEffect;
+import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 
 public final class AlchemyRecipe {
 
-	public final ConcentratedFluidEffect[] results;
+	public final ConcentratedFluid[] results;
 	public final Item[] ingredients;
 
 	protected Identifier identifier;
 
-	public AlchemyRecipe(Identifier id, ConcentratedFluidEffect[] results, Item[] ingredients) {
+	public AlchemyRecipe(Identifier id, ConcentratedFluid[] results, Item[] ingredients) {
 		this.identifier = id;
 		this.results = results;
 		this.ingredients = ingredients;
@@ -52,9 +52,9 @@ public final class AlchemyRecipe {
 			}
 		}
 		JsonArray resultArray = json.getAsJsonArray("results");
-		ConcentratedFluidEffect[] results = new ConcentratedFluidEffect[resultArray.size()];
+		ConcentratedFluid[] results = new ConcentratedFluid[resultArray.size()];
 		for (int i = 0; i < results.length; i++) {
-			results[i] = ConcentratedFluidEffect.fromJson(resultArray.get(i).getAsJsonObject());
+			results[i] = ConcentratedFluid.fromJson(resultArray.get(i).getAsJsonObject());
 			if (results[i] == null) {
 				throw new JsonParseException(
 						"Unregistered result effect in " + id.toString() + " json");
