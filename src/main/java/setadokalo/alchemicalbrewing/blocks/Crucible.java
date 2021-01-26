@@ -9,6 +9,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.Material;
@@ -69,7 +70,6 @@ public class Crucible extends BlockWithEntity {
 
 	@Override
 	public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-		AlchemicalBrewing.log(Level.INFO, "creating block entity");
 		return new CrucibleEntity(pos, state, 9, 16);
 	}
 
@@ -126,7 +126,7 @@ public class Crucible extends BlockWithEntity {
 		if (!world.isClient) {
 			ItemStack borrowedStack = itemStack.copy();
 			borrowedStack.setCount(1);
-			if (entity.addItem(itemStack)) {
+			if (entity.addItem(borrowedStack)) {
 				if (!player.getAbilities().creativeMode)
 					itemStack.decrement(1);
 				return ActionResult.success(world.isClient);
@@ -237,6 +237,11 @@ public class Crucible extends BlockWithEntity {
    @Nullable
    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
       return (type == AlchemicalBrewing.crucibleBlockEntity) ? (w, bP, bS, entity) -> CrucibleEntity.tick(entity) : null;
-   }
-
+	}
+	
+	// I despise you, Mojang.
+	@Override
+	public BlockRenderType getRenderType(BlockState state) {
+		return BlockRenderType.MODEL;
+  } 
 }

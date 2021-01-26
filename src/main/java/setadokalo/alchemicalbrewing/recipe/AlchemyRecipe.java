@@ -6,9 +6,8 @@ import com.google.gson.JsonParseException;
 
 import org.apache.logging.log4j.Level;
 
-import net.minecraft.item.Item;
+import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
@@ -16,11 +15,11 @@ import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 public final class AlchemyRecipe {
 
 	public final ConcentratedFluid[] results;
-	public final Item[] ingredients;
+	public final ItemPredicate[] ingredients;
 
 	protected Identifier identifier;
 
-	public AlchemyRecipe(Identifier id, ConcentratedFluid[] results, Item[] ingredients) {
+	public AlchemyRecipe(Identifier id, ConcentratedFluid[] results, ItemPredicate[] ingredients) {
 		this.identifier = id;
 		this.results = results;
 		this.ingredients = ingredients;
@@ -37,19 +36,10 @@ public final class AlchemyRecipe {
 					AlchemicalBrewing.MOD_NAME + " json array requires array with key \"ingredients\".");
 		}
 		JsonArray ingredientArray = json.getAsJsonArray(INGR_KEY);
-		Item[] ingredients = new Item[ingredientArray.size()];
+		ItemPredicate[] ingredients = new ItemPredicate[ingredientArray.size()];
 		for (int i = 0; i < ingredients.length; i++) {
 			JsonObject ingredientDefinition = ingredientArray.get(i).getAsJsonObject();
-			Identifier ingredientId = Identifier.tryParse(ingredientDefinition.get("item").getAsString());
-			if (ingredientId == null) {
-				throw new JsonParseException("Invalid ingredient item ID in " + id.toString() + " json: "
-						+ ingredientArray.get(i).getAsString());
-			}
-			ingredients[i] = Registry.ITEM.get(ingredientId);
-			if (ingredients[i] == null) {
-				throw new JsonParseException("Unregistered ingredient item ID in " + id.toString() + " json: "
-						+ ingredientId.toString());
-			}
+			ingredients[i] = ItemPredicate.fromJson(ingredientDefinition);
 		}
 		JsonArray resultArray = json.getAsJsonArray("results");
 		ConcentratedFluid[] results = new ConcentratedFluid[resultArray.size()];

@@ -12,25 +12,26 @@ import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
 import setadokalo.alchemicalbrewing.util.Color;
 
-public class Stew extends AlchemyFluid {
+public class Healing extends AlchemyFluid {
 	@Nullable
 	private List<FluidEffect> lazyEffects = null;
-	
-	public Stew(Identifier identifier) {
+	public Healing(Identifier identifier) {
 		type = EffectType.POSITIVE;
 		this.identifier = identifier;
 	}
+
+	
 	@Override
 	public List<FluidEffect> getEffects() {
 		if (lazyEffects == null) {
 			lazyEffects = new ArrayList<>();
-			lazyEffects.add(AlchemyEffectRegistry.get(new Identifier(AlchemicalBrewing.MODID, "stew")));
+			lazyEffects.add(AlchemyEffectRegistry.get(new Identifier(AlchemicalBrewing.MODID, "healing")));
 		}
 		return lazyEffects;
 	}
 
 	@Override
 	public Color getColor(@Nullable ItemStack stack) {
-		return new Color(112, 57, 19);
+		return Color.RED;
 	}
 }

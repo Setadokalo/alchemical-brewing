@@ -1,5 +1,6 @@
 package setadokalo.alchemicalbrewing.reciperegistry;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,10 @@ public class AlchemyRecipeManager extends MultiJsonDataLoader implements Identif
 					AlchemyRecipe recipe = AlchemyRecipe.fromJson(id, je.getAsJsonObject());
 					AlchemyRecipeRegistry.register(recipe);
 				} catch (Exception e) {
-					AlchemicalBrewing.log(Level.INFO, "Error loading alchemy recipe file " + id.toString() + " for reason '" + e.getMessage() + "'");
+					AlchemicalBrewing.log(Level.ERROR, "Error loading alchemy recipe file " + id.toString() + " for reason '" + e.getMessage() + "'");
+					for (StackTraceElement stackTraceLine: e.getStackTrace()) {
+						AlchemicalBrewing.log(Level.ERROR, stackTraceLine.toString());
+					}
 				}
 			})
 		);

@@ -3,21 +3,20 @@ package setadokalo.alchemicalbrewing.blocks.tileentity;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.logging.log4j.Level;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.util.registry.Registry;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
@@ -25,6 +24,7 @@ import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 import setadokalo.alchemicalbrewing.registry.AlchemyRecipeRegistry;
 
+//TODO: Implement BlockEntityClientSerializable
 public class CrucibleEntity extends BlockEntity {
 	private class CookingItemStack {
 		ItemStack itemStack;
@@ -64,13 +64,11 @@ public class CrucibleEntity extends BlockEntity {
 
 	public CrucibleEntity(BlockPos pos, BlockState state, int maxWater, int maxIngredients) {
 		super(AlchemicalBrewing.crucibleBlockEntity, pos, state);
-		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
 		maxWaterCapacity = maxWater;
 		maxIngredientCapacity = maxIngredients;
 	}
 	public CrucibleEntity(BlockPos pos, BlockState state) {
 		super(AlchemicalBrewing.crucibleBlockEntity, pos, state);
-		AlchemicalBrewing.log(Level.INFO, "created a crucible entity");
 		maxWaterCapacity = 9;
 		maxIngredientCapacity = 16;
 	}
@@ -122,6 +120,7 @@ public class CrucibleEntity extends BlockEntity {
 
 
 	public int addLevels(int amount, boolean addLess) {
+		AlchemicalBrewing.log(Level.INFO, "Adding levels to pot");
 		if (amount + level > this.maxWaterCapacity) {
 			if (addLess) {
 				amount = this.maxWaterCapacity - level;
@@ -140,8 +139,17 @@ public class CrucibleEntity extends BlockEntity {
 	// `stack` should be treated as consumed by this method; in rust terms, ownership is transferred here to this class.
 	public boolean addItem(ItemStack stack) {
 		if (this.isReady() && this.itemsInPot.size() < this.maxIngredientCapacity) {
-			this.add(itemsInPot, stack);
-			AlchemicalBrewing.log(Level.INFO, "Added item " + stack.getItem().toString() + " to pot");
+			if (stack.getCount() > 1) {
+				stack = stack.copy();
+				int count = stack.getCount();
+				stack.setCount(1);
+				for (; count > 0; count--) {
+					this.add(itemsInPot, stack.copy());
+				}
+			} else {
+				this.add(itemsInPot, stack);
+			}
+			AlchemicalBrewing.log(Level.INFO, "Added item " + Registry.ITEM.getId(stack.getItem()).toString() + " to pot");
 			markDirty();
 			return true;
 		}
@@ -160,15 +168,16 @@ public class CrucibleEntity extends BlockEntity {
 	}
 
 	public boolean isPureWater() {
-		return this.itemsInPot.isEmpty() && this.readyItemsInPot.isEmpty();
+		//TODO: maintaining three lists in the pot gets gross. Look into simplifying it to 1 or 2
+		return this.itemsInPot.isEmpty() && this.readyItemsInPot.isEmpty() && this.effectsInPot.isEmpty();
 	}
 
 	public boolean tickToReady() {
 		
 		if (!this.isReady()) {
 			ticksToReady -= 1;
-			if (ticksToReady == 0) {
-				AlchemicalBrewing.log(Level.INFO, "Crucible is ready");
+			if (ticksToReady <= 0) {
+				ticksToReady = 0;
 				if (this.world != null && !this.world.isClient()) {
 					this.world.setBlockState(this.pos, this.world.getBlockState(this.pos).with(Crucible.READY, this.isReady()), 2);
 				}
@@ -200,28 +209,34 @@ public class CrucibleEntity extends BlockEntity {
 	}
 
 	protected void tryAllRecipes() {
+		boolean didRecipe = false;
 		// for each recipe, try performing the recipe (as many times as possible with the ingredients in the pot)
 		for (AlchemyRecipe recipe: AlchemyRecipeRegistry.values()) {
 			while (tryPerformRecipe(recipe)) {
+				didRecipe = true;
 				AlchemicalBrewing.log(Level.INFO, "performed recipe " + recipe);
-
+				//TODO: maybe make this use a translation key from the recipe itself? or just remove the
+				//TODO: translatable key for it entirely
 				MutableText textToSend = new TranslatableText("message.alchemicalbrewing.recipefinished");
 				String[] translationKeyFragments = recipe.getIdentifier().toString().split(":");
 				String transKey = translationKeyFragments[0] + "." + translationKeyFragments[1];
-				textToSend.append(new TranslatableText("fluideffect.name." + transKey));
+				textToSend.append(new TranslatableText("name.fluid." + transKey));
 				for (PlayerEntity player : this.getWorld().getPlayers()) {
 					
 					player.sendMessage(textToSend, false);
 				}
 			}
 		}
+		if (didRecipe) {
+			markDirty();
+		}
 	}
 
 	protected boolean tryPerformRecipe(AlchemyRecipe recipe) {
 		List<ItemStack> list = (List<ItemStack>) this.readyItemsInPot.clone();
 		List<ItemStack> foundItems = new ArrayList<>();
-		for (Item requiredItem: recipe.ingredients) {
-			if (!isItemInPot(list, requiredItem, foundItems))
+		for (ItemPredicate requiredItem: recipe.ingredients) {
+			if (!isPredicateInPot(list, requiredItem, foundItems))
 				return false;
 		}
 		for (ItemStack item: foundItems) {
@@ -247,10 +262,10 @@ public class CrucibleEntity extends BlockEntity {
 		if (!resultFoundInPot)
 			this.effectsInPot.add(effectToAdd.clone());
 	}
-	protected boolean isItemInPot(List<ItemStack> list, Item requiredItem, List<ItemStack> moveToList) {
+	protected boolean isPredicateInPot(List<ItemStack> list, ItemPredicate requiredItem, List<ItemStack> moveToList) {
 		ItemStack foundItem = null;
 		for (ItemStack item: list) {
-			if (item.getItem() == requiredItem) {
+			if (requiredItem.test(item)) {
 				foundItem = item;
 				break;
 			}

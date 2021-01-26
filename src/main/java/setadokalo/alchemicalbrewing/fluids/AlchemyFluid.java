@@ -27,7 +27,7 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 	@Nullable
 	protected String partialtranslationKey;
 	protected EffectType type;
-	private Identifier identifier;
+	protected Identifier identifier;
 
 	protected void generateTranslationKey() {
 		this.partialtranslationKey = "fluid." + this.identifier.getNamespace() + "." + this.identifier.getPath();
@@ -47,6 +47,11 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 		return new TranslatableText("name." + this.partialtranslationKey).formatted(this.type.getFormatting());
 	}
 
+	/**
+	 * Gets the effects for this fluid effect. <br><br>
+	 * <b>WARNING FOR IMPLEMENTORS:</b> Be wary about creating your effect lists early (i.e. in the constructor),
+	 * as if you attempt to load a FluidEffect before it has been added to the registry undefined behavior will result.
+	 */
 	@Override
 	public List<FluidEffect> getEffects() {
 		return new ArrayList<>();

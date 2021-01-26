@@ -25,12 +25,11 @@ public class AlchemicalBrewingClient implements ClientModInitializer {
 			if (view != null && state.getBlock() == AlchemicalBrewing.STONE_CRUCIBLE) {
 				BlockEntity be = view.getBlockEntity(pos);
 				if (be == null) {
-					AlchemicalBrewing.log(Level.INFO, "Impossible condition reached! Crucible at " + pos.toString() + " had no block entity!");
-					return 0;
+					return Color.WATER.asInt();
 				}
-				return FluidEffectUtil.getColorForEffects(((CrucibleEntity)view.getBlockEntity(pos)).getEffects(), null);
+				return FluidEffectUtil.getColorForEffects(((CrucibleEntity)be).getEffects(), null);
 			}
-			return 0;
+			return Color.WATER.asInt();
 		}, AlchemicalBrewing.STONE_CRUCIBLE);
 		ColorProviderRegistry.ITEM.register((stack, tintIndex) -> {
 			if (stack.getItem() instanceof FilledVial && tintIndex == 0) {

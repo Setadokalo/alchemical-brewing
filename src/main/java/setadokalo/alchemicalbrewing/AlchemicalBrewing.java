@@ -10,6 +10,7 @@ import setadokalo.alchemicalbrewing.item.MortarAndPestle;
 import setadokalo.alchemicalbrewing.item.Vial;
 import setadokalo.alchemicalbrewing.reciperegistry.AlchemyRecipeManager;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
+import setadokalo.alchemicalbrewing.registry.AlchemyFluidRegistry;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -108,6 +109,9 @@ public class AlchemicalBrewing implements ModInitializer {
 
 		AlchemyEffectRegistry.register(new Saturation(new Identifier(MODID, "stew")));
 		AlchemyEffectRegistry.register(new Healing(new Identifier(MODID, "healing")));
+		//TODO: Rename the effect or fluid
+		AlchemyFluidRegistry.register(new setadokalo.alchemicalbrewing.fluids.Healing(new Identifier(MODID, "healing")));
+		AlchemyFluidRegistry.register(new setadokalo.alchemicalbrewing.fluids.Stew(new Identifier(MODID, "stew")));
 	}
 	public static void log(Level level, String message){
 		LOGGER.log(level, LOG_STRING, message);

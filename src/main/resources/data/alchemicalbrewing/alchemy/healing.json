@@ -7,11 +7,15 @@
 	  {
 		 "item": "minecraft:apple",
 		 "count": 1
+	  },
+	  {
+		 "item": "alchemicalbrewing:healing_essence",
+		 "count": 1
 	  }
 	],
 	"results": [
 		{
-			"effect": "alchemicalbrewing:healing",
+			"fluid": "alchemicalbrewing:healing",
 			"concentration": "2"
 		}
 	]

@@ -17,13 +17,13 @@
 		 "count": 1
 	  },
 	  {
-		 "item": "minecraft:brown_mushroom",
+		 "tag": "alchemicalbrewing:edible_mushrooms",
 		 "count": 1
 	  }
 	],
 	"results": [
 		{
-			"effect": "alchemicalbrewing:stew",
+			"fluid": "alchemicalbrewing:stew",
 			"concentration": "5"
 		}
 	]
