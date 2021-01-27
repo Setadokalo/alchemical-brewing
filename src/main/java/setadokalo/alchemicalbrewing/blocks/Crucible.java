@@ -139,7 +139,7 @@ public class Crucible extends BlockWithEntity {
 			CrucibleEntity entity) {
 		if (!world.isClient && entity.addLevels(1, false) == 1) {
 			for (ConcentratedFluid effect : FilledVial.getFluids(itemStack))
-				entity.addEffectToPot(effect);
+				entity.addFluidToPot(effect);
 			if (!player.getAbilities().creativeMode) {
 				itemStack.decrement(1);		
 				ItemStack emptyVial = new ItemStack(AlchemicalBrewing.VIAL, 1);

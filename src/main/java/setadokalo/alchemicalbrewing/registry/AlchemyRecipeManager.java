@@ -1,4 +1,4 @@
-package setadokalo.alchemicalbrewing.reciperegistry;
+package setadokalo.alchemicalbrewing.registry;
 
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +32,8 @@ public class AlchemyRecipeManager extends MultiJsonDataLoader implements Identif
 		return new Identifier(AlchemicalBrewing.MODID, "alchemy");
 	}
 
+	/** Takes the list of loaders and processes them
+	 */
 	@Override
 	protected void apply(Map<Identifier, List<JsonElement>> loader, ResourceManager manager, Profiler profiler) {
 		AlchemicalBrewing.log(Level.INFO, "Reload detected");

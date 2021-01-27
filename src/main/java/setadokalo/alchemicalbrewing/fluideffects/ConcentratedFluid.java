@@ -35,10 +35,12 @@ public class ConcentratedFluid {
 	/**
 	 * Serializes a ConcentratedFluid instance to an NBT tag.
 	 * (Used to store Effect data in ItemStacks)
+	 * @return 
 	 */
-	public void toTag(CompoundTag tag) {
+	public CompoundTag toTag(CompoundTag tag) {
 		tag.putString(FLUIDTAG, this.fluid.getIdentifier().toString());
 		tag.putString(CONTAG, this.concentration.toString());
+		return tag;
 	}
 	/**
 	 * Constructs a ConcentratedFluid instance from an NBT tag.

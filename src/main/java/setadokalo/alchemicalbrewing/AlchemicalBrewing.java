@@ -8,7 +8,7 @@ import setadokalo.alchemicalbrewing.item.Essence;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.item.MortarAndPestle;
 import setadokalo.alchemicalbrewing.item.Vial;
-import setadokalo.alchemicalbrewing.reciperegistry.AlchemyRecipeManager;
+import setadokalo.alchemicalbrewing.registry.AlchemyRecipeManager;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
 import setadokalo.alchemicalbrewing.registry.AlchemyFluidRegistry;
 import net.fabricmc.api.ModInitializer;
@@ -44,7 +44,7 @@ public class AlchemicalBrewing implements ModInitializer {
 	public static final Item VIAL = new Vial();
 	public static final Item FILLED_VIAL = new FilledVial();
 	public static final Item MORTAR_AND_PESTLE = new MortarAndPestle();
-	// Essences will mostly be identical in functionality (i.e. none) and simply exist as crafting ingredients
+	// Essences will mostly beecipeidentical in functionality (i.e. none) and simply exist as crafting ingredients
 	public static final Item HEALING_ESSENCE = new Essence();
 	public static final Item PURITY_ESSENCE = new Essence();
 

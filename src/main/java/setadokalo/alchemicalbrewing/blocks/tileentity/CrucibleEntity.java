@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.logging.log4j.Level;
 
+import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -24,19 +25,32 @@ import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 import setadokalo.alchemicalbrewing.registry.AlchemyRecipeRegistry;
 
-//TODO: Implement BlockEntityClientSerializable
-public class CrucibleEntity extends BlockEntity {
-	private class CookingItemStack {
+//TODO: 
+public class CrucibleEntity extends BlockEntity implements BlockEntityClientSerializable {
+	private static class CookingItemStack {
 		ItemStack itemStack;
 		int cookTimeRemaining;
+		public static final transient String REMAINING_TAG = "cookTimeRemaining";
+
 		CookingItemStack(ItemStack stack, int cookTime) {
 			itemStack = stack;
 			cookTimeRemaining = cookTime;
 		}
+
 		boolean tickCooking() {
 			if (cookTimeRemaining > 0)
 				cookTimeRemaining -= 1;
 			return cookTimeRemaining <= 0;
+		}
+
+		public CompoundTag toTag(CompoundTag iTag) {
+			iTag = itemStack.toTag(iTag);
+			iTag.putInt(REMAINING_TAG, cookTimeRemaining);
+			return iTag;
+		}
+
+		public static CookingItemStack fromTag(CompoundTag compoundTag) {
+			return new CookingItemStack(ItemStack.fromTag(compoundTag), compoundTag.getInt(REMAINING_TAG));
 		}
 	}
 
@@ -53,13 +67,16 @@ public class CrucibleEntity extends BlockEntity {
 	private int level = 0;
 	private ArrayList<CookingItemStack> itemsInPot = new ArrayList<>();
 	private ArrayList<ItemStack> readyItemsInPot = new ArrayList<>();
-	private ArrayList<ConcentratedFluid> effectsInPot = new ArrayList<>();
+	private ArrayList<ConcentratedFluid> fluidsInPot = new ArrayList<>();
 
 	void add(ArrayList<CookingItemStack> iIP, ItemStack stack) {
 		iIP.add(new CookingItemStack(stack, DEFAULT_COOK_TIME));
 	}
 	void add(ArrayList<CookingItemStack> iIP, ItemStack stack, int cookTime) {
 		iIP.add(new CookingItemStack(stack, cookTime));
+	}
+	void add(ArrayList<CookingItemStack> iIP, CookingItemStack iStack) {
+		iIP.add(iStack);
 	}
 
 	public CrucibleEntity(BlockPos pos, BlockState state, int maxWater, int maxIngredients) {
@@ -106,9 +123,9 @@ public class CrucibleEntity extends BlockEntity {
 		if (level < amount)
 			return null;
 		Fraction fracToTake = new Fraction(amount, level);
-		ConcentratedFluid[] effectArray = new ConcentratedFluid[effectsInPot.size()];
-		for (int i = 0; i < effectsInPot.size(); i++) {
-			ConcentratedFluid effect = effectsInPot.get(i).split(fracToTake);
+		ConcentratedFluid[] effectArray = new ConcentratedFluid[fluidsInPot.size()];
+		for (int i = 0; i < fluidsInPot.size(); i++) {
+			ConcentratedFluid effect = fluidsInPot.get(i).split(fracToTake);
 			effectArray[i] = effect;
 		}
 		CompoundTag tag = new CompoundTag();
@@ -169,7 +186,7 @@ public class CrucibleEntity extends BlockEntity {
 
 	public boolean isPureWater() {
 		//TODO: maintaining three lists in the pot gets gross. Look into simplifying it to 1 or 2
-		return this.itemsInPot.isEmpty() && this.readyItemsInPot.isEmpty() && this.effectsInPot.isEmpty();
+		return this.itemsInPot.isEmpty() && this.readyItemsInPot.isEmpty() && this.fluidsInPot.isEmpty();
 	}
 
 	public boolean tickToReady() {
@@ -244,23 +261,23 @@ public class CrucibleEntity extends BlockEntity {
 		}
 
 		for (ConcentratedFluid result : recipe.results) {
-			this.addEffectToPot(result);
+			this.addFluidToPot(result);
 		}
 
 		return true;
 	}
 
-	public void addEffectToPot(ConcentratedFluid effectToAdd) {
+	public void addFluidToPot(ConcentratedFluid fluidToAdd) {
 		boolean resultFoundInPot = false;
-		for (ConcentratedFluid effectInPot : this.effectsInPot) {
-			if (effectInPot.fluid == effectToAdd.fluid) {
-				effectInPot.concentration = effectInPot.concentration.add(effectToAdd.concentration);
+		for (ConcentratedFluid fluidInPot : this.fluidsInPot) {
+			if (fluidInPot.fluid == fluidToAdd.fluid) {
+				fluidInPot.concentration = fluidInPot.concentration.add(fluidToAdd.concentration);
 				resultFoundInPot = true;
 				break;
 			}
 		}
 		if (!resultFoundInPot)
-			this.effectsInPot.add(effectToAdd.clone());
+			this.fluidsInPot.add(fluidToAdd.clone());
 	}
 	protected boolean isPredicateInPot(List<ItemStack> list, ItemPredicate requiredItem, List<ItemStack> moveToList) {
 		ItemStack foundItem = null;
@@ -292,9 +309,7 @@ public class CrucibleEntity extends BlockEntity {
 
 		for(int i = 0; i < this.itemsInPot.size(); ++i) {
 			CookingItemStack cookingItem = this.itemsInPot.get(i);
-			CompoundTag compoundTag = new CompoundTag();
-			cookingItem.itemStack.toTag(compoundTag);
-			compoundTag.putInt("cookTimeRemaining", cookingItem.cookTimeRemaining);
+			CompoundTag compoundTag = cookingItem.toTag(new CompoundTag());
 			listTag.add(compoundTag);
 		}
 
@@ -303,15 +318,25 @@ public class CrucibleEntity extends BlockEntity {
 		}
 		ListTag readyTag = new ListTag();
 
-		for(int i = 0; i < this.itemsInPot.size(); ++i) {
+		for(int i = 0; i < this.readyItemsInPot.size(); ++i) {
 			ItemStack cookingItem = this.readyItemsInPot.get(i);
-			CompoundTag compoundTag = new CompoundTag();
-			cookingItem.toTag(compoundTag);
+			CompoundTag compoundTag = cookingItem.toTag(new CompoundTag());
 			readyTag.add(compoundTag);
 		}
 
 		if (!readyTag.isEmpty()) {
 			tag.put("ReadyItems", readyTag);
+		}
+		ListTag fluidsTag = new ListTag();
+
+		for(int i = 0; i < this.fluidsInPot.size(); ++i) {
+			ConcentratedFluid fluid = this.fluidsInPot.get(i);
+			CompoundTag compoundTag = fluid.toTag(new CompoundTag());
+			fluidsTag.add(compoundTag);
+		}
+
+		if (!fluidsTag.isEmpty()) {
+			tag.put("Fluids", fluidsTag);
 		}
 
 		return tag;
@@ -328,7 +353,7 @@ public class CrucibleEntity extends BlockEntity {
 
 		for(int i = 0; i < listTag.size(); ++i) {
 			CompoundTag compoundTag = listTag.getCompound(i);
-			this.add(this.itemsInPot, ItemStack.fromTag(compoundTag), compoundTag.getInt("cookTimeRemaining"));
+			this.add(this.itemsInPot, CookingItemStack.fromTag(compoundTag));
 		}
 		listTag = tag.getList("ReadyItems", 10);
 
@@ -336,8 +361,25 @@ public class CrucibleEntity extends BlockEntity {
 			CompoundTag compoundTag = listTag.getCompound(i);
 			this.readyItemsInPot.add(ItemStack.fromTag(compoundTag));
 		}
+		listTag = tag.getList("Fluids", 10);
+
+		for(int i = 0; i < listTag.size(); ++i) {
+			CompoundTag compoundTag = listTag.getCompound(i);
+			this.fluidsInPot.add(ConcentratedFluid.fromTag(compoundTag));
+		}
 	}
+
 	public List<ConcentratedFluid> getEffects() {
-		return (List<ConcentratedFluid>) this.effectsInPot.clone();
+		return (List<ConcentratedFluid>) this.fluidsInPot.clone();
+	}
+
+	@Override
+	public void fromClientTag(CompoundTag tag) {
+		this.fromTag(tag);
+	}
+
+	@Override
+	public CompoundTag toClientTag(CompoundTag tag) {
+		return this.toTag(tag);
 	}
 }

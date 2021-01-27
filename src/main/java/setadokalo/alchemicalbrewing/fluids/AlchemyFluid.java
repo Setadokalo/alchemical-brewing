@@ -70,7 +70,7 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 		return Color.WATER;
 	}
 
-	/** Gets the fluid effect from an NBT tag.
+	/** Gets the fluid from an NBT tag.
 	 */
 	public static AlchemyFluid fromTag(CompoundTag compoundTag) {
 		if (compoundTag.contains(ID, 8)) {
