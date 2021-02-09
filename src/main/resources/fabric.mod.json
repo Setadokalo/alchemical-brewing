@@ -15,7 +15,10 @@
     ],
     "main": [
       "setadokalo.alchemicalbrewing.AlchemicalBrewing"
-    ]
+	 ],
+	 "modmenu": [
+		 "setadokalo.alchemicalbrewing.AlchemicalBrewingModMenu"
+	 ]
   },
   "mixins": [
     "alchemical-brewing.mixins.json"

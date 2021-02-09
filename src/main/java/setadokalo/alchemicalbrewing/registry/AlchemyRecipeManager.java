@@ -1,6 +1,5 @@
 package setadokalo.alchemicalbrewing.registry;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +15,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
-import setadokalo.alchemicalbrewing.registry.AlchemyRecipeRegistry;
 import setadokalo.alchemicalbrewing.util.MultiJsonDataLoader;
 
 public class AlchemyRecipeManager extends MultiJsonDataLoader implements IdentifiableResourceReloadListener {

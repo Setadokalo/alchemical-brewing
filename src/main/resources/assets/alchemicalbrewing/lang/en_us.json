@@ -14,11 +14,23 @@
 	"item.alchemicalbrewing.healing_essence": "Essence of Healing",
 	"item.alchemicalbrewing.purity_essence": "Essence of Purity",
 
+	"tooltip.alchemicalbrewing.homeopathy": "Turns out a lower concentration really",
+	"tooltip.alchemicalbrewing.homeopathy2": "does mean a weaker effect. Who knew?",
+
+	"recipe.alchemicalbrewing.stew": "Stew",
 	"name.fluid.alchemicalbrewing.stew": "Stew",
 	"tooltip.fluid.alchemicalbrewing.stew": "Stew (%s parts)",
 
+	"recipe.alchemicalbrewing.healing": "Healing",
 	"name.fluid.alchemicalbrewing.healing": "Healing",
 	"tooltip.fluid.alchemicalbrewing.healing": "Healing (%s parts)",
 	
-	"message.alchemicalbrewing.recipefinished": "Finished brewing recipe: "
+	"message.alchemicalbrewing.recipefinished": "Finished brewing recipe: ",
+
+	"button.alchemicalbrewing.tooltipmode.bar": "Tooltip Display Mode: Bar",
+	"button.alchemicalbrewing.tooltipmode.circle": "Tooltip Display Mode: Circles",
+	
+	"title.alchemicalbrewing.config": "Alchemical Brewing Config",
+
+	"button.alchemicalbrewing.saveandquit": "Save & Quit"
 }

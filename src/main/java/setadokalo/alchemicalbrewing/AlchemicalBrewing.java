@@ -27,6 +27,7 @@ import net.minecraft.util.registry.Registry;
 
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
+import setadokalo.alchemicalbrewing.config.ABConfig;
 import setadokalo.alchemicalbrewing.fluideffects.Healing;
 import setadokalo.alchemicalbrewing.fluideffects.Saturation;
 
@@ -37,6 +38,8 @@ public class AlchemicalBrewing implements ModInitializer {
 	public static final String MODID = "alchemicalbrewing";
 	public static final String MOD_NAME = "Alchemical Brewing";
 	private static final String LOG_STRING = "[" + MOD_NAME + "] {}";
+
+	public static ABConfig config = ABConfig.getConfig();
 
 	public static final Block STONE_CRUCIBLE = new Crucible();
 	public static BlockEntityType<CrucibleEntity> crucibleBlockEntity;

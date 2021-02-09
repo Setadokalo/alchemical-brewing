@@ -4,6 +4,7 @@
   "package": "setadokalo.alchemicalbrewing.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+	  "ScreenMixin"
   ],
   "client": [
   ],

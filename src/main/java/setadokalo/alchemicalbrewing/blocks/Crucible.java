@@ -2,7 +2,6 @@ package setadokalo.alchemicalbrewing.blocks;
 
 import java.util.Random;
 
-import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.api.EnvType;
@@ -70,7 +69,7 @@ public class Crucible extends BlockWithEntity {
 
 	@Override
 	public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-		return new CrucibleEntity(pos, state, 9, 16);
+		return new CrucibleEntity(pos, state, 9, 32);
 	}
 
 
@@ -87,7 +86,7 @@ public class Crucible extends BlockWithEntity {
 		} else if (item == AlchemicalBrewing.VIAL) {
 			return useVial(world, pos, itemStack, player, hand, entity, i);
 		} else if (item == AlchemicalBrewing.FILLED_VIAL) {
-			return useFilledVial(world, itemStack, player, hand, entity);
+			return useFilledVial(world, pos, itemStack, player, hand, entity);
 		} else {
 			return useOther(world, itemStack, player, entity);
 		}
@@ -129,13 +128,13 @@ public class Crucible extends BlockWithEntity {
 			if (entity.addItem(borrowedStack)) {
 				if (!player.getAbilities().creativeMode)
 					itemStack.decrement(1);
-				return ActionResult.success(world.isClient);
+				return ActionResult.success(true);
 			}
 		}
-		return ActionResult.PASS;
+		return ActionResult.CONSUME;
 	}
 
-	private ActionResult useFilledVial(World world, ItemStack itemStack, PlayerEntity player, Hand hand,
+	private ActionResult useFilledVial(World world, BlockPos pos, ItemStack itemStack, PlayerEntity player, Hand hand,
 			CrucibleEntity entity) {
 		if (!world.isClient && entity.addLevels(1, false) == 1) {
 			for (ConcentratedFluid effect : FilledVial.getFluids(itemStack))
@@ -149,6 +148,7 @@ public class Crucible extends BlockWithEntity {
 					player.dropItem(emptyVial, false);
 				}
 			}
+			world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
 			return ActionResult.success(true);
 		}
 		return ActionResult.success(false);

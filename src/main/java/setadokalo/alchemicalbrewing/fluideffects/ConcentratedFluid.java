@@ -2,16 +2,19 @@ package setadokalo.alchemicalbrewing.fluideffects;
 
 import com.google.gson.JsonObject;
 
-import org.apache.commons.math3.fraction.Fraction;
+import org.apache.commons.math3.fraction.BigFraction;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.fluids.AlchemyFluid;
 import setadokalo.alchemicalbrewing.registry.AlchemyFluidRegistry;
-import setadokalo.alchemicalbrewing.util.FractionUtil;
+import setadokalo.alchemicalbrewing.util.Color;
+import setadokalo.alchemicalbrewing.util.BigFractionUtil;
 
 // while a `FluidEffect` instance is a shared instance among all potions
 /**
@@ -21,9 +24,9 @@ import setadokalo.alchemicalbrewing.util.FractionUtil;
  */
 public class ConcentratedFluid {
 	public AlchemyFluid fluid;
-	public Fraction concentration; 
+	public BigFraction concentration; 
 
-	public ConcentratedFluid(AlchemyFluid fluid, Fraction conc) {
+	public ConcentratedFluid(AlchemyFluid fluid, BigFraction conc) {
 		this.fluid = fluid;
 		concentration = conc;
 	}
@@ -53,9 +56,9 @@ public class ConcentratedFluid {
 		}
 		if (compoundTag.contains(CONTAG, 8) ) {
 			String concentration = compoundTag.getString(CONTAG);
-			return new ConcentratedFluid(fluid, FractionUtil.fromString(concentration));
+			return new ConcentratedFluid(fluid, BigFractionUtil.fromString(concentration));
 		} else {
-			return new ConcentratedFluid(fluid, Fraction.ONE);
+			return new ConcentratedFluid(fluid, BigFraction.ONE);
 		}
 	}
 
@@ -66,7 +69,7 @@ public class ConcentratedFluid {
 	public static ConcentratedFluid fromJson(JsonObject jObject) {
 		AlchemyFluid fluid = AlchemyFluidRegistry.get(Identifier.tryParse(jObject.get("fluid").getAsString()));
 		String concentrationString = jObject.get("concentration").getAsString();
-		return new ConcentratedFluid(fluid, FractionUtil.fromString(concentrationString));
+		return new ConcentratedFluid(fluid, BigFractionUtil.fromString(concentrationString));
 	}
 
 	public ConcentratedFluid clone() {
@@ -75,19 +78,15 @@ public class ConcentratedFluid {
 
 
 	public Text getTooltip() {
-		return this.fluid.getTooltip(FractionUtil.toProperString(this.concentration));
+		return this.fluid.getTooltip(BigFractionUtil.toProperString(this.concentration));
 	}
 
-	public ConcentratedFluid split(Fraction fracToTake) {
+	public ConcentratedFluid split(BigFraction fracToTake) {
 		double dFrac = fracToTake.doubleValue();
 		if (dFrac < 0.0 || dFrac > 1.0)
 			throw new IllegalArgumentException("fracToTake must be between 0 and 1");
-		Fraction removed;
-		try {
-			removed = this.concentration.multiply(fracToTake);
-		} catch (ArithmeticException e) {
-			removed = Fraction.ZERO;
-		}
+		BigFraction removed;
+		removed = this.concentration.multiply(fracToTake);
 		ConcentratedFluid newEffect = new ConcentratedFluid(this.fluid, removed);
 		this.concentration = this.concentration.subtract(removed);
 		return newEffect;
@@ -96,5 +95,8 @@ public class ConcentratedFluid {
 	public void applyEffects(World world, LivingEntity user) {
 		for (FluidEffect effect : this.fluid.getEffects())
 			effect.applyEffect(world, user, this.concentration);
+	}
+	public Color getColor(@Nullable ItemStack stack) {
+		return this.fluid.getColor(stack);
 	}
 }

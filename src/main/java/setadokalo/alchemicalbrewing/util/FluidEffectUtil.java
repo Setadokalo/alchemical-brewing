@@ -2,7 +2,7 @@ package setadokalo.alchemicalbrewing.util;
 
 import java.util.List;
 
-import org.apache.commons.math3.fraction.Fraction;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.ItemStack;
@@ -19,22 +19,34 @@ public class FluidEffectUtil {
 	public static int getColorForStack(ItemStack stack) {
 		if (stack.getItem() == AlchemicalBrewing.FILLED_VIAL) {
 			List<ConcentratedFluid> effects = FilledVial.getFluids(stack);
-			return getColorForEffects(effects, stack);
+			return getColorForEffects(9000, effects, stack);
 		}
 		return 0;
 	}
-	public static int getColorForEffects(List<ConcentratedFluid> effects, @Nullable ItemStack stack) {
-		Fraction totalConcentration = Fraction.ZERO;
+
+	/**
+	 * 
+	 * @param fluidAmount the amount of water the fluids are dissolved in (using the Fabric API standard,
+	 *  where 81000 = 1 Bucket of Water)
+	 * @param effects
+	 * @param stack
+	 * @return
+	 */
+	public static int getColorForEffects(int fluidAmount, List<ConcentratedFluid> effects, @Nullable ItemStack stack) {
+		BigFraction totalConcentration = BigFraction.ZERO;
 		for (ConcentratedFluid effect : effects) {
 			totalConcentration = totalConcentration.add(effect.concentration);
 		}
 		Color totalColor = Color.BLACK;
 		double dTotalCon = totalConcentration.doubleValue();
 		for (ConcentratedFluid effect : effects) {
-			Color currentColor = effect.fluid.getColor(stack);
+			Color currentColor = effect.getColor(stack);
 			currentColor = currentColor.mul(effect.concentration.doubleValue() / dTotalCon);
 			totalColor = totalColor.add(currentColor);
 		}
+		double conScale = ((double) fluidAmount) / 9000;
+		dTotalCon /= conScale;
+
 		if (dTotalCon < 5.0) {
 			totalColor = Color.WATER.mix(totalColor, dTotalCon / 5.0);
 		}
@@ -51,7 +63,7 @@ public class FluidEffectUtil {
 		ItemStack stack = new ItemStack(AlchemicalBrewing.FILLED_VIAL);
 		ConcentratedFluid[] cEffects = new ConcentratedFluid[effects.length];
 		for (int i = 0; i < effects.length; i++) {
-			cEffects[i] = new ConcentratedFluid(effects[i], Fraction.ONE);
+			cEffects[i] = new ConcentratedFluid(effects[i], BigFraction.ONE);
 		}
 		stack.setTag(getFullTagForEffects(cEffects));
 		return stack;

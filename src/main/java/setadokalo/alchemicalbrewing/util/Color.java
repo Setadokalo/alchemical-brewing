@@ -79,4 +79,14 @@ public final class Color {
 		int blue = (int)Math.round(b * 255);
 		return (red << 16) + (green << 8) + (blue);
 	}
+
+	public int getRed() {
+		return (int)Math.round(r * 255);
+	}
+	public int getGreen() {
+		return (int)Math.round(g * 255);
+	}
+	public int getBlue() {
+		return (int)Math.round(b * 255);
+	}
 }

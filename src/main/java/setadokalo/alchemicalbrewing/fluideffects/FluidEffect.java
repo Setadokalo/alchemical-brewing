@@ -1,6 +1,6 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
-import org.apache.commons.math3.fraction.Fraction;
+import org.apache.commons.math3.fraction.BigFraction;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.CompoundTag;
@@ -34,7 +34,7 @@ public abstract class FluidEffect {
 	 * at the moment of consumption. To provide a lasting effect, you'll need to 
 	 * have `applyEffect` apply a status effect.
 	 */
-	public void applyEffect(World world, LivingEntity entity, Fraction concentration) {
+	public void applyEffect(World world, LivingEntity entity, BigFraction concentration) {
 	}
 
 	public Identifier getIdentifier() {
