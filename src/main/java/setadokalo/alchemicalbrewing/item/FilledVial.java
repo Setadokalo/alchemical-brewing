@@ -6,20 +6,21 @@ import java.util.Optional;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 
+import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtList;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.tooltip.TooltipComponent;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.item.TooltipData;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -29,8 +30,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -92,7 +92,7 @@ public class FilledVial extends Item {
 		List<ConcentratedFluid> effects = getFluids(stack);
 		if (!world.isClient && user instanceof PlayerEntity && !((PlayerEntity) user).getAbilities().creativeMode) {
 			stack.decrement(1);
-			((PlayerEntity) user).giveItemStack(new ItemStack(AlchemicalBrewing.VIAL, 1));
+			((PlayerEntity) user).giveItemStack(new ItemStack(ABItems.VIAL, 1));
 		}
 
 		for (ConcentratedFluid cEffect : effects) {
@@ -105,18 +105,18 @@ public class FilledVial extends Item {
 		return getFluidsForTag(stack.getTag());
 	}
 
-	public static List<ConcentratedFluid> getFluidsForTag(@Nullable CompoundTag tag) {
+	public static List<ConcentratedFluid> getFluidsForTag(@Nullable NbtCompound tag) {
 		List<ConcentratedFluid> list = Lists.newArrayList();
 		getFluidsForTag(tag, list);
 		return list;
 	}
 
-	public static void getFluidsForTag(CompoundTag tag, List<ConcentratedFluid> list) {
+	public static void getFluidsForTag(NbtCompound tag, List<ConcentratedFluid> list) {
 		if (tag != null && tag.contains("Effects", 9)) {
-			ListTag listTag = tag.getList("Effects", 10);
+			NbtList listTag = tag.getList("Effects", 10);
 
 			for (int i = 0; i < listTag.size(); ++i) {
-				CompoundTag compoundTag = listTag.getCompound(i);
+				NbtCompound compoundTag = listTag.getCompound(i);
 				ConcentratedFluid effect = ConcentratedFluid.fromTag(compoundTag);
 				if (effect != null) {
 					list.add(effect);
@@ -125,11 +125,11 @@ public class FilledVial extends Item {
 		}
 	}
 
-	public static ListTag getTagForFluids(ConcentratedFluid... fluids) {
-		ListTag fluidList = new ListTag();
+	public static NbtList getTagForFluids(ConcentratedFluid... fluids) {
+		NbtList fluidList = new NbtList();
 		for (ConcentratedFluid fluid : fluids) {
-			CompoundTag tag = new CompoundTag();
-			fluid.toTag(tag);
+			NbtCompound tag = new NbtCompound();
+			fluid.writeNbt(tag);
 			fluidList.add(tag);
 		}
 		return fluidList;
@@ -141,7 +141,7 @@ public class FilledVial extends Item {
 		
 	}
 
-	class VialTooltip implements ConvertibleTooltipData, TooltipComponent {
+	static class VialTooltip implements ConvertibleTooltipData, TooltipComponent {
 		public ItemStack stack;
 		public List<ConcentratedFluid> fluids;
 
@@ -173,6 +173,7 @@ public class FilledVial extends Item {
 		public void drawItems(TextRenderer textRenderer, int x, int y, MatrixStack matrices, 
 				ItemRenderer itemRenderer, int z, TextureManager textureManager) 
 		{
+			itemRenderer.renderItem(new ItemStack(Items.STONE, 3), ModelTransformation.Mode.GUI, 1, 0, matrices, x, y);
 			if (AlchemicalBrewing.config.tooltipMode.equals(TooltipMode.CIRCLES))
 				drawCircles(x, y, matrices);
 			else
@@ -183,36 +184,43 @@ public class FilledVial extends Item {
 		private void drawBar(int x, int y, MatrixStack matrices, TextureManager textureManager) {
 			matrices.push();
 			matrices.translate(x, y, 0.0);
+			RenderSystem.enableBlend();
+			RenderSystem.enableTexture();
+			RenderSystem.enableColorLogicOp();
+			RenderSystem.setShaderColor(1.0f, 0.5f, 0.5f, 1.0f);
+			RenderSystem.defaultBlendFunc();
+//			RenderSystem.enableCull();
 			// both bar renders use the same texture
 			textureManager.bindTexture(new Identifier(AlchemicalBrewing.MODID, "textures/gui/bars.png"));
 			float barDeltaY = 5.0F / 16.0F; // The distance in texture space of a single bar in the texture
-			RenderSystem.enableBlend();
-			RenderSystem.enableTexture();
-			RenderSystem.defaultBlendFunc();
-			RenderSystem.enableAlphaTest();
+//			RenderSystem.enableAlphaTest();
 			// first, we render the background bar
 			{
 				Matrix4f matrix = matrices.peek().getModel();
 	
 				BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
 	
-				bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
+				bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_LIGHT);
 				
 				bufferBuilder.vertex(matrix, 0.0F, 0.0F, 0.0F)
 					.color(255, 255, 255, 255)
 					.texture(0.0F, 0.0F)
+					.light(0, 0)
 					.next();
 				bufferBuilder.vertex(matrix, 0.0F, 10.0F, 0.0F)
 					.color(255, 255, 255, 255)
 					.texture(0.0F, barDeltaY)
+					.light(0, 1)
 					.next();
 				bufferBuilder.vertex(matrix, (float)BAR_LENGTH, 10.0F, 0.0F)
 					.color(255, 255, 255, 255)
 					.texture(1.0F, barDeltaY)
+					.light(1, 1)
 					.next();
 				bufferBuilder.vertex(matrix, (float)BAR_LENGTH, 0.0F, 0.0F)
 					.color(255, 255, 255, 255)
 					.texture(1.0F, 0.0F)
+					.light(1, 0)
 					.next();
 				
 				bufferBuilder.end();
@@ -221,42 +229,41 @@ public class FilledVial extends Item {
 			// Then, we render each fluid in the vial as a fraction of a foreground bar
 			double currentTotal = 0.0;
 			double barLengthScaled = ((double)BAR_LENGTH) / 10.0; //TODO: 10.0 should be a constant (max capacity of vial)
-			for (int i = 0; i < fluids.size(); i++) {
-				ConcentratedFluid fluid = fluids.get(i);
-				Color fluidColor = fluid.fluid.getColor(stack);
 
-				Matrix4f matrix = matrices.peek().getModel();
-
-				BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-				RenderSystem.enableBlend();
-				RenderSystem.defaultBlendFunc();
-
-				double oldTotal = currentTotal;
-				currentTotal = Math.min(currentTotal + fluid.concentration.doubleValue(), 10.0);
-				bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
-				bufferBuilder.vertex(matrix, (float)(oldTotal * barLengthScaled), 0.0F, 0.0F)
-					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-					.texture((float)(oldTotal / 10.0), barDeltaY)
-					.next();
-				bufferBuilder.vertex(matrix, (float)(oldTotal * barLengthScaled), 10.0F, 0.0F)
-					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-					.texture((float)(oldTotal / 10.0), barDeltaY * 2.0F)
-					.next();
-				bufferBuilder.vertex(matrix, (float)(currentTotal * barLengthScaled), 10.0F, 0.0F)
-					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-					.texture((float)(currentTotal / 10.0), barDeltaY * 2.0F)
-					.next();
-				bufferBuilder.vertex(matrix, (float)(currentTotal * barLengthScaled), 0.0F, 0.0F)
-					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-					.texture((float)(currentTotal / 10.0), barDeltaY)
-					.next();
-				
-				bufferBuilder.end();
-				BufferRenderer.draw(bufferBuilder);
-				RenderSystem.enableTexture();
-				RenderSystem.disableBlend();
-
-			}
+//			for (ConcentratedFluid fluid : fluids) {
+//				Color fluidColor = fluid.fluid.getColor(stack);
+//
+//				Matrix4f matrix = matrices.peek().getModel();
+//
+//				BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+//
+//				double oldTotal = currentTotal;
+//				currentTotal = Math.min(currentTotal + fluid.concentration.doubleValue(), 10.0);
+//				bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
+//				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 0.0F, 0.0F)
+//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+//					.texture((float)(oldTotal / 10.0), barDeltaY)
+//					.next();
+//				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 10.0F, 0.0F)
+//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+//					.texture((float)(oldTotal / 10.0), barDeltaY * 2.0F)
+//					.next();
+//				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 10.0F, 0.0F)
+//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+//					.texture((float)(currentTotal / 10.0), barDeltaY * 2.0F)
+//					.next();
+//				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 0.0F, 0.0F)
+//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+//					.texture((float)(currentTotal / 10.0), barDeltaY)
+//					.next();
+//
+//				bufferBuilder.end();
+//				BufferRenderer.draw(bufferBuilder);
+//
+//			}
+			RenderSystem.enableTexture();
+			RenderSystem.disableBlend();
+			RenderSystem.disableColorLogicOp();
 			matrices.pop();
 		}
 

@@ -3,7 +3,7 @@ package setadokalo.alchemicalbrewing.fluideffects;
 import org.apache.commons.math3.fraction.BigFraction;
 
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
@@ -46,15 +46,15 @@ public abstract class FluidEffect {
 
 	// /** Gets the fluid effect from an NBT tag.
 	//  */
-	// public static FluidEffect fromTag(CompoundTag compoundTag) {
-	// 	if (compoundTag.contains(ID, 8)) {
-	// 		String id = compoundTag.getString(ID);
+	// public static FluidEffect fromTag(NbtCompound NbtCompound) {
+	// 	if (NbtCompound.contains(ID, 8)) {
+	// 		String id = NbtCompound.getString(ID);
 	// 		return AlchemyEffectRegistry.get(new Identifier(id));
 	// 	}
 	// 	return null;
 	// }
 
-	public void toTag(CompoundTag tag) {
+	public void getTag(NbtCompound tag) {
 		tag.putString(ID, this.identifier.toString());
 	}
 

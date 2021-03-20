@@ -6,18 +6,18 @@ import org.apache.commons.math3.fraction.BigFraction;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import setadokalo.alchemicalbrewing.AlchemicalBrewing;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 import setadokalo.alchemicalbrewing.fluids.AlchemyFluid;
+import setadokalo.alchemicalbrewing.item.ABItems;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 
 public class FluidEffectUtil {
 	private FluidEffectUtil() {}
 
 	public static int getColorForStack(ItemStack stack) {
-		if (stack.getItem() == AlchemicalBrewing.FILLED_VIAL) {
+		if (stack.getItem() == ABItems.FILLED_VIAL) {
 			List<ConcentratedFluid> effects = FilledVial.getFluids(stack);
 			return getColorForEffects(9000, effects, stack);
 		}
@@ -53,14 +53,14 @@ public class FluidEffectUtil {
 		return totalColor.asInt();
 	}
 
-	public static CompoundTag getFullTagForEffects(ConcentratedFluid... effects) {
-		CompoundTag tag = new CompoundTag();
-		ListTag lEffects = FilledVial.getTagForFluids(effects);
+	public static NbtCompound getFullTagForEffects(ConcentratedFluid... effects) {
+		NbtCompound tag = new NbtCompound();
+		NbtList lEffects = FilledVial.getTagForFluids(effects);
 		tag.put("Effects", lEffects);
 		return tag;
 	}
 	public static ItemStack getDefaultVialForEffects(AlchemyFluid... effects) {
-		ItemStack stack = new ItemStack(AlchemicalBrewing.FILLED_VIAL);
+		ItemStack stack = new ItemStack(ABItems.FILLED_VIAL);
 		ConcentratedFluid[] cEffects = new ConcentratedFluid[effects.length];
 		for (int i = 0; i < effects.length; i++) {
 			cEffects[i] = new ConcentratedFluid(effects[i], BigFraction.ONE);

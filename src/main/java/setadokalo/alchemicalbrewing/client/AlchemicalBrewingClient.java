@@ -11,6 +11,7 @@ import net.minecraft.client.render.RenderLayer;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.renderer.CrucibleRenderer;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
+import setadokalo.alchemicalbrewing.item.ABItems;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 import setadokalo.alchemicalbrewing.util.Color;
 import setadokalo.alchemicalbrewing.util.FluidEffectUtil;
@@ -37,6 +38,6 @@ public class AlchemicalBrewingClient implements ClientModInitializer {
 			} else {
 				return Color.WHITE.asInt();
 			}
-		}, AlchemicalBrewing.FILLED_VIAL);
+		}, ABItems.FILLED_VIAL);
    }
 }

@@ -41,6 +41,7 @@ import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
+import setadokalo.alchemicalbrewing.item.ABItems;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 
 public class Crucible extends BlockWithEntity {
@@ -83,9 +84,9 @@ public class Crucible extends BlockWithEntity {
 			return useWaterBottle(world, pos, player, hand, entity, i);
 		} else if (item == Items.BUCKET) {
 			return useBucket(world, pos, itemStack, player, hand, entity, i);
-		} else if (item == AlchemicalBrewing.VIAL) {
+		} else if (item == ABItems.VIAL) {
 			return useVial(world, pos, itemStack, player, hand, entity, i);
-		} else if (item == AlchemicalBrewing.FILLED_VIAL) {
+		} else if (item == ABItems.FILLED_VIAL) {
 			return useFilledVial(world, pos, itemStack, player, hand, entity);
 		} else {
 			return useOther(world, itemStack, player, entity);
@@ -141,7 +142,7 @@ public class Crucible extends BlockWithEntity {
 				entity.addFluidToPot(effect);
 			if (!player.getAbilities().creativeMode) {
 				itemStack.decrement(1);		
-				ItemStack emptyVial = new ItemStack(AlchemicalBrewing.VIAL, 1);
+				ItemStack emptyVial = new ItemStack(ABItems.VIAL, 1);
 				if (itemStack.isEmpty()) {
 					player.setStackInHand(hand, emptyVial);
 				} else if (!player.getInventory().insertStack(emptyVial)) {
@@ -160,7 +161,7 @@ public class Crucible extends BlockWithEntity {
 			if (!player.getAbilities().creativeMode) {
 				itemStack.decrement(1);
 			}
-			ItemStack newPotion = new ItemStack(AlchemicalBrewing.FILLED_VIAL, 1);
+			ItemStack newPotion = new ItemStack(ABItems.FILLED_VIAL, 1);
 			newPotion.setTag(entity.takeLevels(1));
 			if (itemStack.isEmpty()) {
 				player.setStackInHand(hand, newPotion);

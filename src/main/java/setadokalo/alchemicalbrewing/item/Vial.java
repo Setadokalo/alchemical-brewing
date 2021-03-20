@@ -39,7 +39,7 @@ public class Vial extends Item {
 
 					if (!world.isClient && user instanceof PlayerEntity && !user.getAbilities().creativeMode) {
 						itemStack.decrement(1);
-						user.giveItemStack(new ItemStack(AlchemicalBrewing.FILLED_VIAL, 1));
+						user.giveItemStack(new ItemStack(ABItems.FILLED_VIAL, 1));
 					}
 					return TypedActionResult.success(itemStack, world.isClient());
 				}

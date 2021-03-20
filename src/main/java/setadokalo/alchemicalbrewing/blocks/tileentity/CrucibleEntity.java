@@ -1,7 +1,6 @@
 package setadokalo.alchemicalbrewing.blocks.tileentity;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.fraction.BigFraction;
@@ -13,8 +12,8 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.TranslatableText;
@@ -44,14 +43,14 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 			return cookTimeRemaining <= 0;
 		}
 
-		public CompoundTag toTag(CompoundTag iTag) {
-			iTag = itemStack.toTag(iTag);
+		public NbtCompound writeNbt(NbtCompound iTag) {
+			iTag = itemStack.writeNbt(iTag);
 			iTag.putInt(REMAINING_TAG, cookTimeRemaining);
 			return iTag;
 		}
 
-		public static CookingItemStack fromTag(CompoundTag compoundTag) {
-			return new CookingItemStack(ItemStack.fromTag(compoundTag), compoundTag.getInt(REMAINING_TAG));
+		public static CookingItemStack fromTag(NbtCompound tag) {
+			return new CookingItemStack(ItemStack.fromNbt(tag), tag.getInt(REMAINING_TAG));
 		}
 	}
 
@@ -139,7 +138,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		sync();
 	}
 
-	public CompoundTag takeLevels(int amount) {
+	public NbtCompound takeLevels(int amount) {
 		int oldLevel = this.level;
 		if (removeLevelsNoEmpty(amount, false, true) == 0)
 			return null;
@@ -149,7 +148,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 			ConcentratedFluid effect = fluidsInPot.get(i).split(fracToTake);
 			effectArray[i] = effect;
 		}
-		CompoundTag tag = new CompoundTag();
+		NbtCompound tag = new NbtCompound();
 		tag.put("Effects", FilledVial.getTagForFluids(effectArray));
 		return tag;
 	}
@@ -333,56 +332,55 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		return false;
 	}
 
-
-	// Serialize the BlockEntity
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
-		tag = super.toTag(tag);
+	// Serialize the BlockEntity
+	public NbtCompound writeNbt(NbtCompound tag) {
+		tag = super.writeNbt(tag);
 
 		// Save the current value of the number to the tag
 		tag.putInt("TicksToReady", this.ticksToReady);
 		tag.putInt("Level", this.level);
 		
-		ListTag allTag = new ListTag();
+		NbtList allTag = new NbtList();
 
 		for(int i = 0; i < this.allItemsInPot.size(); ++i) {
 			ItemStack item = this.allItemsInPot.get(i);
-			CompoundTag compoundTag = item.toTag(new CompoundTag());
-			allTag.add(compoundTag);
+			NbtCompound NbtCompound = item.writeNbt(new NbtCompound());
+			allTag.add(NbtCompound);
 		}
 
 		if (!allTag.isEmpty()) {
 			tag.put("AllItems", allTag);
 		}
 
-		ListTag listTag = new ListTag();
+		NbtList NbtList = new NbtList();
 
 		for(int i = 0; i < this.itemsInPot.size(); ++i) {
 			CookingItemStack cookingItem = this.itemsInPot.get(i);
-			CompoundTag compoundTag = cookingItem.toTag(new CompoundTag());
-			listTag.add(compoundTag);
+			NbtCompound NbtCompound = cookingItem.writeNbt(new NbtCompound());
+			NbtList.add(NbtCompound);
 		}
 
-		if (!listTag.isEmpty()) {
-			tag.put("Items", listTag);
+		if (!NbtList.isEmpty()) {
+			tag.put("Items", NbtList);
 		}
-		ListTag readyTag = new ListTag();
+		NbtList readyTag = new NbtList();
 
 		for(int i = 0; i < this.readyItemsInPot.size(); ++i) {
 			ItemStack cookingItem = this.readyItemsInPot.get(i);
-			CompoundTag compoundTag = cookingItem.toTag(new CompoundTag());
-			readyTag.add(compoundTag);
+			NbtCompound NbtCompound = cookingItem.writeNbt(new NbtCompound());
+			readyTag.add(NbtCompound);
 		}
 
 		if (!readyTag.isEmpty()) {
 			tag.put("ReadyItems", readyTag);
 		}
-		ListTag fluidsTag = new ListTag();
+		NbtList fluidsTag = new NbtList();
 
 		for(int i = 0; i < this.fluidsInPot.size(); ++i) {
 			ConcentratedFluid fluid = this.fluidsInPot.get(i);
-			CompoundTag compoundTag = fluid.toTag(new CompoundTag());
-			fluidsTag.add(compoundTag);
+			NbtCompound NbtCompound = fluid.writeNbt(new NbtCompound());
+			fluidsTag.add(NbtCompound);
 		}
 
 		if (!fluidsTag.isEmpty()) {
@@ -394,36 +392,36 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	
 	// Deserialize the BlockEntity
 	@Override
-	public void fromTag(CompoundTag tag) {
-		super.fromTag(tag);
+	public void readNbt(NbtCompound tag) {
+		super.readNbt(tag);
 		this.ticksToReady = tag.getInt("TicksToReady");
 		this.level = tag.getInt("Level");
 		
-		ListTag listTag = tag.getList("Items", 10);
+		NbtList NbtList = tag.getList("Items", 10);
 
-		for(int i = 0; i < listTag.size(); ++i) {
-			CompoundTag compoundTag = listTag.getCompound(i);
-			this.itemsInPot.add(CookingItemStack.fromTag(compoundTag));
+		for(int i = 0; i < NbtList.size(); ++i) {
+			NbtCompound NbtCompound = NbtList.getCompound(i);
+			this.itemsInPot.add(CookingItemStack.fromTag(NbtCompound));
 		}
 		
-		listTag = tag.getList("AllItems", 10);
+		NbtList = tag.getList("AllItems", 10);
 
-		for(int i = 0; i < listTag.size(); ++i) {
-			CompoundTag compoundTag = listTag.getCompound(i);
-			this.allItemsInPot.add(ItemStack.fromTag(compoundTag));
+		for(int i = 0; i < NbtList.size(); ++i) {
+			NbtCompound NbtCompound = NbtList.getCompound(i);
+			this.allItemsInPot.add(ItemStack.fromNbt(NbtCompound));
 		}
 		
-		listTag = tag.getList("ReadyItems", 10);
+		NbtList = tag.getList("ReadyItems", 10);
 
-		for(int i = 0; i < listTag.size(); ++i) {
-			CompoundTag compoundTag = listTag.getCompound(i);
-			this.readyItemsInPot.add(ItemStack.fromTag(compoundTag));
+		for(int i = 0; i < NbtList.size(); ++i) {
+			NbtCompound NbtCompound = NbtList.getCompound(i);
+			this.readyItemsInPot.add(ItemStack.fromNbt(NbtCompound));
 		}
-		listTag = tag.getList("Fluids", 10);
+		NbtList = tag.getList("Fluids", 10);
 
-		for(int i = 0; i < listTag.size(); ++i) {
-			CompoundTag compoundTag = listTag.getCompound(i);
-			this.fluidsInPot.add(ConcentratedFluid.fromTag(compoundTag));
+		for(int i = 0; i < NbtList.size(); ++i) {
+			NbtCompound NbtCompound = NbtList.getCompound(i);
+			this.fluidsInPot.add(ConcentratedFluid.fromTag(NbtCompound));
 		}
 	}
 
@@ -432,18 +430,18 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	}
 
 	@Override
-	public void fromClientTag(CompoundTag tag) {
+	public void fromClientTag(NbtCompound tag) {
 		this.fluidsInPot.clear();
 		this.allItemsInPot.clear();
 		this.itemsInPot.clear();
 		this.readyItemsInPot.clear();
-		this.fromTag(tag);
+		this.readNbt(tag);
 		MinecraftClient instance = MinecraftClient.getInstance();
 		instance.worldRenderer.scheduleBlockRenders(pos.getX(), pos.getY(), pos.getZ(), pos.getX(), pos.getY(), pos.getZ());
 	}
 
 	@Override
-	public CompoundTag toClientTag(CompoundTag tag) {
-		return this.toTag(tag);
+	public NbtCompound toClientTag(NbtCompound tag) {
+		return this.writeNbt(tag);
 	}
 }

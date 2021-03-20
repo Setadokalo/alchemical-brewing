@@ -7,7 +7,7 @@
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/alchemical-brewing/icon.png",
+  "icon": "assets/alchemicalbrewing/icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
@@ -15,9 +15,6 @@
     ],
     "main": [
       "setadokalo.alchemicalbrewing.AlchemicalBrewing"
-	 ],
-	 "modmenu": [
-		 "setadokalo.alchemicalbrewing.AlchemicalBrewingModMenu"
 	 ]
   },
   "mixins": [

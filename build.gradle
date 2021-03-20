@@ -19,8 +19,6 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	 implementation files('libs/modmenu-2.0.0-beta.1+custom-dev.jar')
-
     implementation "org.apache.commons:commons-math3:${project.math_version}"
 	 include "org.apache.commons:commons-math3:${project.math_version}"
 	 

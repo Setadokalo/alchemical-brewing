@@ -4,10 +4,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import setadokalo.alchemicalbrewing.item.Essence;
-import setadokalo.alchemicalbrewing.item.FilledVial;
-import setadokalo.alchemicalbrewing.item.MortarAndPestle;
-import setadokalo.alchemicalbrewing.item.Vial;
+import setadokalo.alchemicalbrewing.item.ABItems;
 import setadokalo.alchemicalbrewing.registry.AlchemyRecipeManager;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
 import setadokalo.alchemicalbrewing.registry.AlchemyFluidRegistry;
@@ -43,24 +40,17 @@ public class AlchemicalBrewing implements ModInitializer {
 
 	public static final Block STONE_CRUCIBLE = new Crucible();
 	public static BlockEntityType<CrucibleEntity> crucibleBlockEntity;
-	
-	public static final Item VIAL = new Vial();
-	public static final Item FILLED_VIAL = new FilledVial();
-	public static final Item MORTAR_AND_PESTLE = new MortarAndPestle();
-	// Essences will mostly beecipeidentical in functionality (i.e. none) and simply exist as crafting ingredients
-	public static final Item HEALING_ESSENCE = new Essence();
-	public static final Item PURITY_ESSENCE = new Essence();
 
 	public static final ItemGroup ITEM_GROUP = FabricItemGroupBuilder.create(
 		new Identifier(MODID, "general"))
 		.icon(() -> new ItemStack(STONE_CRUCIBLE))
 		.appendItems(stacks -> {
 			stacks.add(new ItemStack(STONE_CRUCIBLE));
-			stacks.add(new ItemStack(VIAL));
-			stacks.add(new ItemStack(FILLED_VIAL));
-			stacks.add(new ItemStack(MORTAR_AND_PESTLE));
-			stacks.add(new ItemStack(HEALING_ESSENCE));
-			stacks.add(new ItemStack(PURITY_ESSENCE));
+			stacks.add(new ItemStack(ABItems.VIAL));
+			stacks.add(new ItemStack(ABItems.FILLED_VIAL));
+			stacks.add(new ItemStack(ABItems.MORTAR_AND_PESTLE));
+			stacks.add(new ItemStack(ABItems.HEALING_ESSENCE));
+			stacks.add(new ItemStack(ABItems.PURITY_ESSENCE));
 		})
 		.build();
 	
@@ -84,30 +74,30 @@ public class AlchemicalBrewing implements ModInitializer {
 		Registry.register(
 			Registry.ITEM,
 			new Identifier(MODID, "vial"),
-			VIAL
+			ABItems.VIAL
 		);
 		Registry.register(
 			Registry.ITEM,
 			new Identifier(MODID, "filled_vial"),
-			FILLED_VIAL
+			ABItems.FILLED_VIAL
 		);
 
 		Registry.register(
 			Registry.ITEM,
 			new Identifier(MODID, "mortar_and_pestle"),
-			MORTAR_AND_PESTLE
+			ABItems.MORTAR_AND_PESTLE
 		);
 
 		Registry.register(
 			Registry.ITEM,
 			new Identifier(MODID, "healing_essence"),
-			HEALING_ESSENCE
+			ABItems.HEALING_ESSENCE
 		);
 
 		Registry.register(
 			Registry.ITEM,
 			new Identifier(MODID, "purity_essence"),
-			PURITY_ESSENCE
+			ABItems.PURITY_ESSENCE
 		);
 
 		AlchemyEffectRegistry.register(new Saturation(new Identifier(MODID, "stew")));

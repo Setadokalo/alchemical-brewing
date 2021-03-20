@@ -1,5 +1,7 @@
 package setadokalo.alchemicalbrewing.config;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.texture.TextureManager;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.gui.screen.Screen;
@@ -56,5 +58,6 @@ public class ABConfigScreen extends Screen {
 		 super.render(matrices, mouseX, mouseY, delta);
 		 // Draw the title text.
 		 drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 0xFFFFFF);
+
 	}
 }

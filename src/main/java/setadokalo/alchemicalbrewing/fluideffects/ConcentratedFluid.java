@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -40,7 +40,7 @@ public class ConcentratedFluid {
 	 * (Used to store Effect data in ItemStacks)
 	 * @return 
 	 */
-	public CompoundTag toTag(CompoundTag tag) {
+	public NbtCompound writeNbt(NbtCompound tag) {
 		tag.putString(FLUIDTAG, this.fluid.getIdentifier().toString());
 		tag.putString(CONTAG, this.concentration.toString());
 		return tag;
@@ -49,13 +49,13 @@ public class ConcentratedFluid {
 	 * Constructs a ConcentratedFluid instance from an NBT tag.
 	 * (Used to get Effect data from ItemStacks)
 	 */
-	public static ConcentratedFluid fromTag(CompoundTag compoundTag) {
-		AlchemyFluid fluid = AlchemyFluidRegistry.get(new Identifier(compoundTag.getString(FLUIDTAG)));
+	public static ConcentratedFluid fromTag(NbtCompound NbtCompound) {
+		AlchemyFluid fluid = AlchemyFluidRegistry.get(new Identifier(NbtCompound.getString(FLUIDTAG)));
 		if (fluid == null) {
 			return null;
 		}
-		if (compoundTag.contains(CONTAG, 8) ) {
-			String concentration = compoundTag.getString(CONTAG);
+		if (NbtCompound.contains(CONTAG, 8) ) {
+			String concentration = NbtCompound.getString(CONTAG);
 			return new ConcentratedFluid(fluid, BigFractionUtil.fromString(concentration));
 		} else {
 			return new ConcentratedFluid(fluid, BigFraction.ONE);

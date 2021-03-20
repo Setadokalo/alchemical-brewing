@@ -6,7 +6,7 @@ import java.util.List;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
@@ -72,9 +72,9 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 
 	/** Gets the fluid from an NBT tag.
 	 */
-	public static AlchemyFluid fromTag(CompoundTag compoundTag) {
-		if (compoundTag.contains(ID, 8)) {
-			String id = compoundTag.getString(ID);
+	public static AlchemyFluid fromTag(NbtCompound NbtCompound) {
+		if (NbtCompound.contains(ID, 8)) {
+			String id = NbtCompound.getString(ID);
 			return AlchemyFluidRegistry.get(new Identifier(id));
 		}
 		return null;
