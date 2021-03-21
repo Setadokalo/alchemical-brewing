@@ -10,9 +10,9 @@ import com.google.gson.JsonElement;
 import org.apache.logging.log4j.Level;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.profiling.ProfilerFiller;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 import setadokalo.alchemicalbrewing.util.MultiJsonDataLoader;
@@ -26,14 +26,14 @@ public class AlchemyRecipeManager extends MultiJsonDataLoader implements Identif
 	}
 
 	@Override
-	public Identifier getFabricId() {
-		return new Identifier(AlchemicalBrewing.MODID, "alchemy");
+	public ResourceLocation getFabricId() {
+		return new ResourceLocation(AlchemicalBrewing.MODID, "alchemy");
 	}
 
 	/** Takes the list of loaders and processes them
 	 */
 	@Override
-	protected void apply(Map<Identifier, List<JsonElement>> loader, ResourceManager manager, Profiler profiler) {
+	protected void apply(Map<ResourceLocation, List<JsonElement>> loader, ResourceManager manager, ProfilerFiller profiler) {
 		AlchemicalBrewing.log(Level.INFO, "Reload detected");
 		AlchemyRecipeRegistry.reset();
 		loader.forEach((id, jel) ->  // for each json file

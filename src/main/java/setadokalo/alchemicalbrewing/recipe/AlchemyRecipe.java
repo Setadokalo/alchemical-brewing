@@ -3,12 +3,9 @@ package setadokalo.alchemicalbrewing.recipe;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-
+import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.Level;
-
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.util.Identifier;
-
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 
@@ -17,20 +14,20 @@ public final class AlchemyRecipe {
 	public final ConcentratedFluid[] results;
 	public final ItemPredicate[] ingredients;
 
-	protected Identifier identifier;
+	protected ResourceLocation identifier;
 
-	public AlchemyRecipe(Identifier id, ConcentratedFluid[] results, ItemPredicate[] ingredients) {
+	public AlchemyRecipe(ResourceLocation id, ConcentratedFluid[] results, ItemPredicate[] ingredients) {
 		this.identifier = id;
 		this.results = results;
 		this.ingredients = ingredients;
 	}
 
-	public Identifier getIdentifier() {
+	public ResourceLocation getIdentifier() {
 	return identifier;
 	}
 
 	private static final String INGR_KEY = "ingredients";
-	public static AlchemyRecipe fromJson(Identifier id, JsonObject json) {
+	public static AlchemyRecipe fromJson(ResourceLocation id, JsonObject json) {
 		if (!json.has(INGR_KEY) || !json.get(INGR_KEY).isJsonArray()) {
 			throw new JsonParseException(
 					AlchemicalBrewing.MOD_NAME + " json array requires array with key \"ingredients\".");

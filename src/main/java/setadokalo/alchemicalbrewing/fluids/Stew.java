@@ -2,11 +2,9 @@ package setadokalo.alchemicalbrewing.fluids;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
 import setadokalo.alchemicalbrewing.registry.AlchemyEffectRegistry;
@@ -16,7 +14,7 @@ public class Stew extends AlchemyFluid {
 	@Nullable
 	private List<FluidEffect> lazyEffects = null;
 	
-	public Stew(Identifier identifier) {
+	public Stew(ResourceLocation identifier) {
 		type = EffectType.POSITIVE;
 		this.identifier = identifier;
 	}
@@ -24,7 +22,7 @@ public class Stew extends AlchemyFluid {
 	public List<FluidEffect> getEffects() {
 		if (lazyEffects == null) {
 			lazyEffects = new ArrayList<>();
-			lazyEffects.add(AlchemyEffectRegistry.get(new Identifier(AlchemicalBrewing.MODID, "stew")));
+			lazyEffects.add(AlchemyEffectRegistry.get(new ResourceLocation(AlchemicalBrewing.MODID, "stew")));
 		}
 		return lazyEffects;
 	}

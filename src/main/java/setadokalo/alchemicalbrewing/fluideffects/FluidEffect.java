@@ -1,17 +1,16 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import org.apache.commons.math3.fraction.BigFraction;
-
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 
 /**
  * An effect that can be in a fluid (shocker, I know). 
  */
 public abstract class FluidEffect {
-	protected Identifier identifier;
+	protected ResourceLocation identifier;
 
 	/**
 	 * Constructs a new fluid effect.
@@ -20,7 +19,7 @@ public abstract class FluidEffect {
 	 * register this fluid effect in the registry! Undefined behavior will result
 	 * if it is not!
 	 */
-	protected FluidEffect(Identifier id) {
+	protected FluidEffect(ResourceLocation id) {
 		if (id == null) {
 			throw new NullPointerException("id must not be null");
 		}
@@ -34,10 +33,10 @@ public abstract class FluidEffect {
 	 * at the moment of consumption. To provide a lasting effect, you'll need to 
 	 * have `applyEffect` apply a status effect.
 	 */
-	public void applyEffect(World world, LivingEntity entity, BigFraction concentration) {
+	public void applyEffect(Level world, LivingEntity entity, BigFraction concentration) {
 	}
 
-	public Identifier getIdentifier() {
+	public ResourceLocation getIdentifier() {
 		return this.identifier;
 	}
 
@@ -54,7 +53,7 @@ public abstract class FluidEffect {
 	// 	return null;
 	// }
 
-	public void getTag(NbtCompound tag) {
+	public void getTag(CompoundTag tag) {
 		tag.putString(ID, this.identifier.toString());
 	}
 

@@ -26,16 +26,14 @@
 package setadokalo.alchemicalbrewing.mixin;
 
 import java.util.List;
-
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.item.TooltipData;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.tooltip.ConvertibleTooltipData;
 
@@ -46,7 +44,7 @@ import setadokalo.alchemicalbrewing.tooltip.ConvertibleTooltipData;
 public class ScreenMixin {
 	
 	@Inject(method = "method_32635", at = @At("HEAD"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-	private static void onComponentConstruct(List<TooltipComponent> list, TooltipData data, CallbackInfo ci) {
+	private static void onComponentConstruct(List<ClientTooltipComponent> list, TooltipComponent data, CallbackInfo ci) {
 		if (data instanceof ConvertibleTooltipData) {
 			list.add(((ConvertibleTooltipData) data).getComponent());
 			ci.cancel();

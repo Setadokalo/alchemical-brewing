@@ -1,6 +1,6 @@
 package setadokalo.alchemicalbrewing.item;
 
-import net.minecraft.item.Item;
+import net.minecraft.world.item.Item;
 import setadokalo.alchemicalbrewing.item.Essence;
 
 public class ABItems {

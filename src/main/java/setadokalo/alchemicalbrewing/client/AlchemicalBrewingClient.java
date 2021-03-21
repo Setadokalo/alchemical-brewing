@@ -6,8 +6,8 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.renderer.CrucibleRenderer;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
@@ -20,7 +20,7 @@ import setadokalo.alchemicalbrewing.util.FluidEffectUtil;
 public class AlchemicalBrewingClient implements ClientModInitializer {
    @Override
    public void onInitializeClient() {
-      BlockRenderLayerMap.INSTANCE.putBlock(AlchemicalBrewing.STONE_CRUCIBLE, RenderLayer.getTranslucent());
+      BlockRenderLayerMap.INSTANCE.putBlock(AlchemicalBrewing.STONE_CRUCIBLE, RenderType.translucent());
       BlockEntityRendererRegistry.INSTANCE.register(AlchemicalBrewing.crucibleBlockEntity, CrucibleRenderer::new);
       ColorProviderRegistry.BLOCK.register((state, view, pos, tintIndex) -> {
 			if (view != null && state.getBlock() == AlchemicalBrewing.STONE_CRUCIBLE) {

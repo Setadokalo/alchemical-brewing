@@ -1,13 +1,11 @@
 package setadokalo.alchemicalbrewing.util;
 
 import java.util.List;
-
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.item.ItemStack;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 import setadokalo.alchemicalbrewing.fluids.AlchemyFluid;
 import setadokalo.alchemicalbrewing.item.ABItems;
@@ -53,9 +51,9 @@ public class FluidEffectUtil {
 		return totalColor.asInt();
 	}
 
-	public static NbtCompound getFullTagForEffects(ConcentratedFluid... effects) {
-		NbtCompound tag = new NbtCompound();
-		NbtList lEffects = FilledVial.getTagForFluids(effects);
+	public static CompoundTag getFullTagForEffects(ConcentratedFluid... effects) {
+		CompoundTag tag = new CompoundTag();
+		ListTag lEffects = FilledVial.getTagForFluids(effects);
 		tag.put("Effects", lEffects);
 		return tag;
 	}

@@ -2,14 +2,12 @@ package setadokalo.alchemicalbrewing.fluids;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Identifier;
 import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
 import setadokalo.alchemicalbrewing.fluideffects.FluidEffectProvider;
 import setadokalo.alchemicalbrewing.registry.AlchemyFluidRegistry;
@@ -27,24 +25,24 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 	@Nullable
 	protected String partialtranslationKey;
 	protected EffectType type;
-	protected Identifier identifier;
+	protected ResourceLocation identifier;
 
 	protected void generateTranslationKey() {
 		this.partialtranslationKey = "fluid." + this.identifier.getNamespace() + "." + this.identifier.getPath();
 	}
 
 	@Nullable
-	public Text getTooltip(String concentration) {
+	public Component getTooltip(String concentration) {
 		if (this.partialtranslationKey == null)
 			generateTranslationKey();
-		return new TranslatableText("tooltip." + this.partialtranslationKey, concentration).formatted(this.type.getFormatting());
+		return new TranslatableComponent("tooltip." + this.partialtranslationKey, concentration).withStyle(this.type.getFormatting());
 	}
 
 	@Nullable
-	public Text getName() {
+	public Component getName() {
 		if (this.partialtranslationKey == null)
 			generateTranslationKey();
-		return new TranslatableText("name." + this.partialtranslationKey).formatted(this.type.getFormatting());
+		return new TranslatableComponent("name." + this.partialtranslationKey).withStyle(this.type.getFormatting());
 	}
 
 	/**
@@ -62,7 +60,7 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 		return EffectType.NONE;
 	}
 
-	public Identifier getIdentifier() {
+	public ResourceLocation getIdentifier() {
 		return identifier;
 	}
 
@@ -72,10 +70,10 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 
 	/** Gets the fluid from an NBT tag.
 	 */
-	public static AlchemyFluid fromTag(NbtCompound NbtCompound) {
+	public static AlchemyFluid fromTag(CompoundTag NbtCompound) {
 		if (NbtCompound.contains(ID, 8)) {
 			String id = NbtCompound.getString(ID);
-			return AlchemyFluidRegistry.get(new Identifier(id));
+			return AlchemyFluidRegistry.get(new ResourceLocation(id));
 		}
 		return null;
 	}

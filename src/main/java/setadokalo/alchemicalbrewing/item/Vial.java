@@ -1,51 +1,51 @@
 package setadokalo.alchemicalbrewing.item;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.tag.FluidTags;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
-import net.minecraft.util.hit.BlockHitResult;
 
 public class Vial extends Item {
 
 	public Vial() {
-		super(new Settings().group(AlchemicalBrewing.ITEM_GROUP));
+		super(new Properties().tab(AlchemicalBrewing.ITEM_GROUP));
 	}
 
 	@Override
-	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-      ItemStack itemStack = user.getStackInHand(hand);
-		HitResult hitResult = raycast(world, user, RaycastContext.FluidHandling.SOURCE_ONLY);
+	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
+      ItemStack itemStack = user.getItemInHand(hand);
+		HitResult hitResult = getPlayerPOVHitResult(world, user, ClipContext.Fluid.SOURCE_ONLY);
 		if (hitResult.getType() == HitResult.Type.MISS) {
-			return TypedActionResult.pass(itemStack);
+			return InteractionResultHolder.pass(itemStack);
 		} else {
 			if (hitResult.getType() == HitResult.Type.BLOCK) {
 				BlockPos blockPos = ((BlockHitResult)hitResult).getBlockPos();
-				if (!world.canPlayerModifyAt(user, blockPos)) {
-					return TypedActionResult.pass(itemStack);
+				if (!world.mayInteract(user, blockPos)) {
+					return InteractionResultHolder.pass(itemStack);
 				}
 
-				if (world.getFluidState(blockPos).isIn(FluidTags.WATER)) {
-					world.playSound(user, user.getX(), user.getY(), user.getZ(), SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.NEUTRAL, 1.0F, 1.0F);
+				if (world.getFluidState(blockPos).is(FluidTags.WATER)) {
+					world.playSound(user, user.getX(), user.getY(), user.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
 
-					if (!world.isClient && user instanceof PlayerEntity && !user.getAbilities().creativeMode) {
-						itemStack.decrement(1);
-						user.giveItemStack(new ItemStack(ABItems.FILLED_VIAL, 1));
+					if (!world.isClientSide && user instanceof Player && !user.getAbilities().instabuild) {
+						itemStack.shrink(1);
+						user.addItem(new ItemStack(ABItems.FILLED_VIAL, 1));
 					}
-					return TypedActionResult.success(itemStack, world.isClient());
+					return InteractionResultHolder.sidedSuccess(itemStack, world.isClientSide());
 				}
 			}
 
-			return TypedActionResult.pass(itemStack);
+			return InteractionResultHolder.pass(itemStack);
 		}
    }
 }

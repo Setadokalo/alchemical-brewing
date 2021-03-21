@@ -7,80 +7,80 @@ import org.jetbrains.annotations.Nullable;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.BlockWithEntity;
-import net.minecraft.block.Material;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.IntProperty;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.function.BooleanBiFunction;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BaseEntityBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
 import setadokalo.alchemicalbrewing.item.ABItems;
 import setadokalo.alchemicalbrewing.item.FilledVial;
 
-public class Crucible extends BlockWithEntity {
-	protected static final ParticleEffect PARTICLE = ParticleTypes.BUBBLE_COLUMN_UP;
-	private static final VoxelShape RAY_TRACE_SHAPE = createCuboidShape(
+public class Crucible extends BaseEntityBlock {
+	protected static final ParticleOptions PARTICLE = ParticleTypes.BUBBLE_COLUMN_UP;
+	private static final VoxelShape RAY_TRACE_SHAPE = box(
 		2.0D, 4.0D, 2.0D,
 		14.0D, 16.0D, 14.0D);
-	private static final VoxelShape OUTLINE_SHAPE = VoxelShapes.combineAndSimplify(
-		VoxelShapes.fullCube(),
-		VoxelShapes.union(
-			createCuboidShape(0.0D, 0.0D, 4.0D, 16.0D, 3.0D, 12.0D),
-			createCuboidShape(4.0D, 0.0D, 0.0D, 12.0D, 3.0D, 16.0D),
-			createCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 3.0D, 14.0D),
+	private static final VoxelShape OUTLINE_SHAPE = Shapes.join(
+		Shapes.block(),
+		Shapes.or(
+			box(0.0D, 0.0D, 4.0D, 16.0D, 3.0D, 12.0D),
+			box(4.0D, 0.0D, 0.0D, 12.0D, 3.0D, 16.0D),
+			box(2.0D, 0.0D, 2.0D, 14.0D, 3.0D, 14.0D),
 			RAY_TRACE_SHAPE),
-		BooleanBiFunction.ONLY_FIRST);
+		BooleanOp.ONLY_FIRST);
 
 
-	public static final BooleanProperty READY = BooleanProperty.of("ready");
-	public static final IntProperty LEVEL = IntProperty.of("level", 0, 9);
+	public static final BooleanProperty READY = BooleanProperty.create("ready");
+	public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 9);
 
 
 	public Crucible() {
-		super(FabricBlockSettings.of(Material.STONE).hardness(4.0f).nonOpaque());
-		setDefaultState(getStateManager().getDefaultState().with(READY, false).with(LEVEL, 0));
+		super(FabricBlockSettings.of(Material.STONE).hardness(4.0f).noOcclusion());
+		registerDefaultState(getStateDefinition().any().setValue(READY, false).setValue(LEVEL, 0));
 	}
 
 	@Override
-	public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+	public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new CrucibleEntity(pos, state, 9, 32);
 	}
 
 
-	private ActionResult useOnEntity(World world, BlockPos pos, ItemStack itemStack, PlayerEntity player, Hand hand, CrucibleEntity entity) {
+	private InteractionResult useOnEntity(Level world, BlockPos pos, ItemStack itemStack, Player player, InteractionHand hand, CrucibleEntity entity) {
 		
 		int i = entity.getLevel();
 		Item item = itemStack.getItem();
 		if (item == Items.WATER_BUCKET && i < entity.maxWaterCapacity) {
 			return useWaterBucket(world, pos, player, hand, entity);
-		} else if (item == Items.POTION && PotionUtil.getPotion(itemStack) == Potions.WATER) {
+		} else if (item == Items.POTION && PotionUtils.getPotion(itemStack) == Potions.WATER) {
 			return useWaterBottle(world, pos, player, hand, entity, i);
 		} else if (item == Items.BUCKET) {
 			return useBucket(world, pos, itemStack, player, hand, entity, i);
@@ -93,140 +93,140 @@ public class Crucible extends BlockWithEntity {
 		}
 	}
 
-	private ActionResult useWaterBottle(World world, BlockPos pos, PlayerEntity player, Hand hand, CrucibleEntity entity,
+	private InteractionResult useWaterBottle(Level world, BlockPos pos, Player player, InteractionHand hand, CrucibleEntity entity,
 			int i) {
-		if (i < entity.maxWaterCapacity && !world.isClient) {
-			if (!player.getAbilities().creativeMode) {
-				player.setStackInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
+		if (i < entity.maxWaterCapacity && !world.isClientSide) {
+			if (!player.getAbilities().instabuild) {
+				player.setItemInHand(hand, new ItemStack(Items.GLASS_BOTTLE));
 			}
 
 			entity.addLevels(1, true);
-			world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			world.playSound((Player)null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
 		}
 
-		return ActionResult.success(world.isClient);
+		return InteractionResult.sidedSuccess(world.isClientSide);
 	}
 
-	private ActionResult useWaterBucket(World world, BlockPos pos, PlayerEntity player, Hand hand, CrucibleEntity entity) {
-		if (!world.isClient) {
-			if (!player.getAbilities().creativeMode) {
-				player.setStackInHand(hand, new ItemStack(Items.BUCKET));
+	private InteractionResult useWaterBucket(Level world, BlockPos pos, Player player, InteractionHand hand, CrucibleEntity entity) {
+		if (!world.isClientSide) {
+			if (!player.getAbilities().instabuild) {
+				player.setItemInHand(hand, new ItemStack(Items.BUCKET));
 			}
 
 			entity.addLevels(9, true);
-			world.playSound((PlayerEntity) null, pos, SoundEvents.ITEM_BUCKET_EMPTY, SoundCategory.BLOCKS, 1.0F,
+			world.playSound((Player) null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F,
 					1.0F);
 		}
 
-		return ActionResult.success(world.isClient);
+		return InteractionResult.sidedSuccess(world.isClientSide);
 	}
 
 	// other items are consumed by the crucible
-	private ActionResult useOther(World world, ItemStack itemStack, PlayerEntity player, CrucibleEntity entity) {
-		if (!world.isClient) {
+	private InteractionResult useOther(Level world, ItemStack itemStack, Player player, CrucibleEntity entity) {
+		if (!world.isClientSide) {
 			ItemStack borrowedStack = itemStack.copy();
 			borrowedStack.setCount(1);
 			if (entity.addItem(borrowedStack)) {
-				if (!player.getAbilities().creativeMode)
-					itemStack.decrement(1);
-				return ActionResult.success(true);
+				if (!player.getAbilities().instabuild)
+					itemStack.shrink(1);
+				return InteractionResult.sidedSuccess(true);
 			}
 		}
-		return ActionResult.CONSUME;
+		return InteractionResult.CONSUME;
 	}
 
-	private ActionResult useFilledVial(World world, BlockPos pos, ItemStack itemStack, PlayerEntity player, Hand hand,
+	private InteractionResult useFilledVial(Level world, BlockPos pos, ItemStack itemStack, Player player, InteractionHand hand,
 			CrucibleEntity entity) {
-		if (!world.isClient && entity.addLevels(1, false) == 1) {
+		if (!world.isClientSide && entity.addLevels(1, false) == 1) {
 			for (ConcentratedFluid effect : FilledVial.getFluids(itemStack))
 				entity.addFluidToPot(effect);
-			if (!player.getAbilities().creativeMode) {
-				itemStack.decrement(1);		
+			if (!player.getAbilities().instabuild) {
+				itemStack.shrink(1);		
 				ItemStack emptyVial = new ItemStack(ABItems.VIAL, 1);
 				if (itemStack.isEmpty()) {
-					player.setStackInHand(hand, emptyVial);
-				} else if (!player.getInventory().insertStack(emptyVial)) {
-					player.dropItem(emptyVial, false);
+					player.setItemInHand(hand, emptyVial);
+				} else if (!player.getInventory().add(emptyVial)) {
+					player.drop(emptyVial, false);
 				}
 			}
-			world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
-			return ActionResult.success(true);
+			world.playSound((Player)null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+			return InteractionResult.sidedSuccess(true);
 		}
-		return ActionResult.success(false);
+		return InteractionResult.sidedSuccess(false);
 	}
 
-	private ActionResult useVial(World world, BlockPos pos, ItemStack itemStack, PlayerEntity player, Hand hand,
+	private InteractionResult useVial(Level world, BlockPos pos, ItemStack itemStack, Player player, InteractionHand hand,
 			CrucibleEntity entity, int i) {
-		if (i >= 1 && !world.isClient) {
-			if (!player.getAbilities().creativeMode) {
-				itemStack.decrement(1);
+		if (i >= 1 && !world.isClientSide) {
+			if (!player.getAbilities().instabuild) {
+				itemStack.shrink(1);
 			}
 			ItemStack newPotion = new ItemStack(ABItems.FILLED_VIAL, 1);
 			newPotion.setTag(entity.takeLevels(1));
 			if (itemStack.isEmpty()) {
-				player.setStackInHand(hand, newPotion);
-			} else if (!player.getInventory().insertStack(newPotion)) {
-				player.dropItem(newPotion, false);
+				player.setItemInHand(hand, newPotion);
+			} else if (!player.getInventory().add(newPotion)) {
+				player.drop(newPotion, false);
 			}
-			world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			world.playSound((Player)null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
 		}
 
-		return ActionResult.success(world.isClient);
+		return InteractionResult.sidedSuccess(world.isClientSide);
 	}
 
-	private ActionResult useBucket(World world, BlockPos pos, ItemStack itemStack, PlayerEntity player, Hand hand,
+	private InteractionResult useBucket(Level world, BlockPos pos, ItemStack itemStack, Player player, InteractionHand hand,
 			CrucibleEntity entity, int i) {
-		if (i >= 9 && !world.isClient) {
-			if (!player.getAbilities().creativeMode && entity.isPureWater()) {
-				itemStack.decrement(1);
+		if (i >= 9 && !world.isClientSide) {
+			if (!player.getAbilities().instabuild && entity.isPureWater()) {
+				itemStack.shrink(1);
 				if (itemStack.isEmpty()) {
-					player.setStackInHand(hand, new ItemStack(Items.WATER_BUCKET));
-				} else if (!player.getInventory().insertStack(new ItemStack(Items.WATER_BUCKET))) {
-					player.dropItem(new ItemStack(Items.WATER_BUCKET), false);
+					player.setItemInHand(hand, new ItemStack(Items.WATER_BUCKET));
+				} else if (!player.getInventory().add(new ItemStack(Items.WATER_BUCKET))) {
+					player.drop(new ItemStack(Items.WATER_BUCKET), false);
 				}
 			}
 			entity.removeLevels(9, true, false);
-			world.playSound((PlayerEntity)null, pos, SoundEvents.ITEM_BUCKET_FILL, SoundCategory.BLOCKS, 1.0F, 1.0F);
+			world.playSound((Player)null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
 		}
 
-		return ActionResult.success(world.isClient);
+		return InteractionResult.sidedSuccess(world.isClientSide);
 	}
 
 	@Override
-	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		ItemStack itemStack = player.getStackInHand(hand);
+	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+		ItemStack itemStack = player.getItemInHand(hand);
 		CrucibleEntity entity = (CrucibleEntity) world.getBlockEntity(pos);
 		if (itemStack.isEmpty()) {
-			if (player.isSneaking()) {
+			if (player.isShiftKeyDown()) {
 				entity.emptyPot();
 			}
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		} else {
 			return useOnEntity(world, pos, itemStack, player, hand, entity);
 		}
 	}
 
 	@Override
-	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+	public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
 		return OUTLINE_SHAPE;
 	}
 	@Override
-	public VoxelShape getRaycastShape(BlockState state, BlockView world, BlockPos pos) {
+	public VoxelShape getInteractionShape(BlockState state, BlockGetter world, BlockPos pos) {
 		return RAY_TRACE_SHAPE;
 	}
 
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> stateManager) {
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> stateManager) {
 		stateManager.add(READY).add(LEVEL);
 	}
 
 	@Override
 	@Environment(EnvType.CLIENT)
-	public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+	public void animateTick(BlockState state, Level world, BlockPos pos, Random random) {
 		CrucibleEntity entity = (CrucibleEntity) world.getBlockEntity(pos);
 		assert entity != null;
-		if (state.get(READY)) {
-			double surface = ((double)state.get(LEVEL)) / 16.0 + 0.4;
+		if (state.getValue(READY)) {
+			double surface = ((double)state.getValue(LEVEL)) / 16.0 + 0.4;
 			double d = (double)pos.getX() + 0.5D + (random.nextDouble() - 0.5D) * 0.8D;
 			double e = (double)pos.getY() + surface + (random.nextDouble() - 0.5D) * 0.15D;
 			double f = (double)pos.getZ() + 0.5D + (random.nextDouble() - 0.5D) * 0.8D;
@@ -236,13 +236,13 @@ public class Crucible extends BlockWithEntity {
 
 	@Override
    @Nullable
-   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
       return (type == AlchemicalBrewing.crucibleBlockEntity) ? (w, bP, bS, entity) -> CrucibleEntity.tick(entity) : null;
 	}
 	
 	// I despise you, Mojang.
 	@Override
-	public BlockRenderType getRenderType(BlockState state) {
-		return BlockRenderType.MODEL;
+	public RenderShape getRenderShape(BlockState state) {
+		return RenderShape.MODEL;
   } 
 }

@@ -1,16 +1,14 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
 import com.google.gson.JsonObject;
-
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.fluids.AlchemyFluid;
 import setadokalo.alchemicalbrewing.registry.AlchemyFluidRegistry;
 import setadokalo.alchemicalbrewing.util.Color;
@@ -40,7 +38,7 @@ public class ConcentratedFluid {
 	 * (Used to store Effect data in ItemStacks)
 	 * @return 
 	 */
-	public NbtCompound writeNbt(NbtCompound tag) {
+	public CompoundTag writeNbt(CompoundTag tag) {
 		tag.putString(FLUIDTAG, this.fluid.getIdentifier().toString());
 		tag.putString(CONTAG, this.concentration.toString());
 		return tag;
@@ -49,8 +47,8 @@ public class ConcentratedFluid {
 	 * Constructs a ConcentratedFluid instance from an NBT tag.
 	 * (Used to get Effect data from ItemStacks)
 	 */
-	public static ConcentratedFluid fromTag(NbtCompound NbtCompound) {
-		AlchemyFluid fluid = AlchemyFluidRegistry.get(new Identifier(NbtCompound.getString(FLUIDTAG)));
+	public static ConcentratedFluid fromTag(CompoundTag NbtCompound) {
+		AlchemyFluid fluid = AlchemyFluidRegistry.get(new ResourceLocation(NbtCompound.getString(FLUIDTAG)));
 		if (fluid == null) {
 			return null;
 		}
@@ -67,7 +65,7 @@ public class ConcentratedFluid {
 	 * (Used to create recipe results from datapacks)
 	 */
 	public static ConcentratedFluid fromJson(JsonObject jObject) {
-		AlchemyFluid fluid = AlchemyFluidRegistry.get(Identifier.tryParse(jObject.get("fluid").getAsString()));
+		AlchemyFluid fluid = AlchemyFluidRegistry.get(ResourceLocation.tryParse(jObject.get("fluid").getAsString()));
 		String concentrationString = jObject.get("concentration").getAsString();
 		return new ConcentratedFluid(fluid, BigFractionUtil.fromString(concentrationString));
 	}
@@ -77,7 +75,7 @@ public class ConcentratedFluid {
 	}
 
 
-	public Text getTooltip() {
+	public Component getTooltip() {
 		return this.fluid.getTooltip(BigFractionUtil.toProperString(this.concentration));
 	}
 
@@ -92,7 +90,7 @@ public class ConcentratedFluid {
 		return newEffect;
 	}
 
-	public void applyEffects(World world, LivingEntity user) {
+	public void applyEffects(Level world, LivingEntity user) {
 		for (FluidEffect effect : this.fluid.getEffects())
 			effect.applyEffect(world, user, this.concentration);
 	}

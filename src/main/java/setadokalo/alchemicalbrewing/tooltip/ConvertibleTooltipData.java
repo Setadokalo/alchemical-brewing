@@ -24,10 +24,10 @@
 */
 package setadokalo.alchemicalbrewing.tooltip;
 
-import net.minecraft.client.gui.tooltip.TooltipComponent;
-import net.minecraft.client.item.TooltipData;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
-public interface ConvertibleTooltipData extends TooltipData {
+public interface ConvertibleTooltipData extends TooltipComponent {
 	
-	public TooltipComponent getComponent();
+	public ClientTooltipComponent getComponent();
 }

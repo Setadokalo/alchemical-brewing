@@ -3,18 +3,17 @@ package setadokalo.alchemicalbrewing.registry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import setadokalo.alchemicalbrewing.fluids.AlchemyFluid;
 
 public class AlchemyFluidRegistry {
 	private AlchemyFluidRegistry() {
 	}
 
-	private static HashMap<Identifier, AlchemyFluid> idToFluidEffect = new HashMap<>();
+	private static HashMap<ResourceLocation, AlchemyFluid> idToFluidEffect = new HashMap<>();
 
 	public static AlchemyFluid register(AlchemyFluid alchemyRecipe) {
-		Identifier id = alchemyRecipe.getIdentifier();
+		ResourceLocation id = alchemyRecipe.getIdentifier();
 		if (idToFluidEffect.containsKey(id)) {
 			throw new IllegalArgumentException("Duplicate alchemyRecipe id tried to register: '" + id.toString() + "'");
 		}
@@ -23,7 +22,7 @@ public class AlchemyFluidRegistry {
 	}
 
 	protected static AlchemyFluid update(AlchemyFluid alchemyRecipe) {
-		Identifier id = alchemyRecipe.getIdentifier();
+		ResourceLocation id = alchemyRecipe.getIdentifier();
 		if (idToFluidEffect.containsKey(id)) {
 			idToFluidEffect.remove(id);
 		}
@@ -34,11 +33,11 @@ public class AlchemyFluidRegistry {
 		return idToFluidEffect.size();
 	}
 
-	public static Stream<Identifier> identifiers() {
+	public static Stream<ResourceLocation> identifiers() {
 		return idToFluidEffect.keySet().stream();
 	}
 
-	public static Iterable<Map.Entry<Identifier, AlchemyFluid>> entries() {
+	public static Iterable<Map.Entry<ResourceLocation, AlchemyFluid>> entries() {
 		return idToFluidEffect.entrySet();
 	}
 
@@ -46,7 +45,7 @@ public class AlchemyFluidRegistry {
 		return idToFluidEffect.values();
 	}
 
-	public static AlchemyFluid get(Identifier id) {
+	public static AlchemyFluid get(ResourceLocation id) {
 		if (!idToFluidEffect.containsKey(id)) {
 			throw new IllegalArgumentException(
 					"Could not get alchemyRecipe from id '" + id.toString() + "', as it was not registered!");
@@ -54,7 +53,7 @@ public class AlchemyFluidRegistry {
 		return idToFluidEffect.get(id);
 	}
 
-	public static boolean contains(Identifier id) {
+	public static boolean contains(ResourceLocation id) {
 		return idToFluidEffect.containsKey(id);
 	}
 

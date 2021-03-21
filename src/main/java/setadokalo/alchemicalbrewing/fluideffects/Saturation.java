@@ -1,11 +1,10 @@
 package setadokalo.alchemicalbrewing.fluideffects;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.apache.commons.math3.fraction.BigFraction;
-
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import setadokalo.alchemicalbrewing.util.Color;
 
 public class Saturation extends FluidEffect {
@@ -14,22 +13,22 @@ public class Saturation extends FluidEffect {
 	public final float saturationModifier;
 
 
-	public Saturation(Identifier id, BigFraction hungerFactor, float saturationModifier) {
+	public Saturation(ResourceLocation id, BigFraction hungerFactor, float saturationModifier) {
 		super(id);
 		this.hungerFactor = hungerFactor;
 		this.saturationModifier = saturationModifier;
 	}
 
-	public Saturation(Identifier id) {
+	public Saturation(ResourceLocation id) {
 		super(id);
 		this.hungerFactor = new BigFraction(3, 1);
 		this.saturationModifier = 0.75f;
 	}
 
 	@Override
-	public void applyEffect(World world, LivingEntity entity, BigFraction fConcentration) {
-		if (entity instanceof PlayerEntity) {
-			((PlayerEntity)entity).getHungerManager().add(fConcentration.multiply(hungerFactor).intValue(), saturationModifier);
+	public void applyEffect(Level world, LivingEntity entity, BigFraction fConcentration) {
+		if (entity instanceof Player) {
+			((Player)entity).getFoodData().eat(fConcentration.multiply(hungerFactor).intValue(), saturationModifier);
 		}
 	}
 

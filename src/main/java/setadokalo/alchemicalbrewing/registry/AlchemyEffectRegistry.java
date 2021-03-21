@@ -3,18 +3,17 @@ package setadokalo.alchemicalbrewing.registry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import setadokalo.alchemicalbrewing.fluideffects.FluidEffect;
 
 public class AlchemyEffectRegistry {
 
 	private AlchemyEffectRegistry() {}
 
-	private static HashMap<Identifier, FluidEffect> idToFluidEffect = new HashMap<>();
+	private static HashMap<ResourceLocation, FluidEffect> idToFluidEffect = new HashMap<>();
 
 	public static FluidEffect register(FluidEffect effect) {
-		Identifier id = effect.getIdentifier();
+		ResourceLocation id = effect.getIdentifier();
 		if (idToFluidEffect.containsKey(id)) {
 			throw new IllegalArgumentException("Duplicate alchemyRecipe id tried to register: '" + id.toString() + "'");
 		}
@@ -23,7 +22,7 @@ public class AlchemyEffectRegistry {
 	}
 
 	protected static FluidEffect update(FluidEffect effect) {
-		Identifier id = effect.getIdentifier();
+		ResourceLocation id = effect.getIdentifier();
 		if (idToFluidEffect.containsKey(id)) {
 			idToFluidEffect.remove(id);
 		}
@@ -34,11 +33,11 @@ public class AlchemyEffectRegistry {
 		return idToFluidEffect.size();
 	}
 
-	public static Stream<Identifier> identifiers() {
+	public static Stream<ResourceLocation> identifiers() {
 		return idToFluidEffect.keySet().stream();
 	}
 
-	public static Iterable<Map.Entry<Identifier, FluidEffect>> entries() {
+	public static Iterable<Map.Entry<ResourceLocation, FluidEffect>> entries() {
 		return idToFluidEffect.entrySet();
 	}
 
@@ -46,7 +45,7 @@ public class AlchemyEffectRegistry {
 		return idToFluidEffect.values();
 	}
 
-	public static FluidEffect get(Identifier id) {
+	public static FluidEffect get(ResourceLocation id) {
 		if (!idToFluidEffect.containsKey(id)) {
 			throw new IllegalArgumentException(
 					"Could not get alchemyRecipe from id '" + id.toString() + "', as it was not registered!");
@@ -54,7 +53,7 @@ public class AlchemyEffectRegistry {
 		return idToFluidEffect.get(id);
 	}
 
-	public static boolean contains(Identifier id) {
+	public static boolean contains(ResourceLocation id) {
 		return idToFluidEffect.containsKey(id);
 	}
 
