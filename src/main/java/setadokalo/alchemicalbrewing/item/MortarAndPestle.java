@@ -15,7 +15,7 @@ public class MortarAndPestle extends Item {
 		//TODO there might be a better way to deal with this than using reflection
 		Class<Item> itemC = Item.class;
 		try {
-			Field recipeRemainder = itemC.getDeclaredField("recipeRemainder"); //TODO change to "field_8008" on release
+			Field recipeRemainder = itemC.getDeclaredField("craftingRemainingItem"); //TODO change to "field_8008" on release
 			// unless a better method is found, of course - that's why I'm not spending effort on making Gradle change it for me
 			recipeRemainder.setAccessible(true);
 			recipeRemainder.set(this, this);

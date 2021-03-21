@@ -28,7 +28,7 @@ public class AlchemicalBrewingClient implements ClientModInitializer {
 				if (be == null) {
 					return Color.WATER.asInt();
 				}
-				return FluidEffectUtil.getColorForEffects(((CrucibleEntity) be).getLevel() * 9000, ((CrucibleEntity)be).getEffects(), null);
+				return FluidEffectUtil.getColorForEffects(((CrucibleEntity) be).getWaterLevel() * 9000, ((CrucibleEntity)be).getEffects(), null);
 			}
 			return Color.WATER.asInt();
 		}, AlchemicalBrewing.STONE_CRUCIBLE);

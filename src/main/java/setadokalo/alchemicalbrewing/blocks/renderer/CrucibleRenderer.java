@@ -3,6 +3,7 @@ package setadokalo.alchemicalbrewing.blocks.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Vector3f;
 import java.util.List;
+import java.util.Objects;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -27,7 +28,7 @@ public class CrucibleRenderer implements BlockEntityRenderer<CrucibleEntity> {
 	public void render(CrucibleEntity blockEntity, float tickDelta, PoseStack matrices,
 			MultiBufferSource vertexConsumers, int light, int overlay) {
 		List<ItemStack> itemsInPot = blockEntity.getItemsInPot();
-		double time = blockEntity.getLevel().getGameTime() + tickDelta;
+		double time = Objects.requireNonNull(blockEntity.getLevel()).getGameTime() + tickDelta;
 		if (itemsInPot.size() == 1) {
 			ItemStack stack = itemsInPot.get(0);
 			matrices.pushPose();

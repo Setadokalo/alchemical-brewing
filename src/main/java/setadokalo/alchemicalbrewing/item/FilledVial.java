@@ -186,41 +186,34 @@ public class FilledVial extends Item {
 			matrices.translate(x, y, 0.0);
 			RenderSystem.enableBlend();
 			RenderSystem.enableTexture();
-//			RenderSystem.enableColorLogicOp();
 			RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 			RenderSystem.defaultBlendFunc();
-//			RenderSystem.enableCull();
 			// both bar renders use the same texture
-			textureManager.bindForSetup(new ResourceLocation(AlchemicalBrewing.MODID, "textures/gui/bars.png"));
+			RenderSystem.setShaderTexture(0, new ResourceLocation(AlchemicalBrewing.MODID, "textures/gui/bars.png"));
 			float barDeltaY = 5.0F / 16.0F; // The distance in texture space of a single bar in the texture
-//			RenderSystem.enableAlphaTest();
 			// first, we render the background bar
 			{
 				Matrix4f matrix = matrices.last().pose();
 	
 				BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
 	
-				bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX_LIGHTMAP);
+				bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 				
 				bufferBuilder.vertex(matrix, 0.0F, 0.0F, 0.0F)
-					.color(255, 255, 255, 255)
 					.uv(0.0F, 0.0F)
-					.uv2(0, 0)
+					.color(255, 255, 255, 255)
 					.endVertex();
 				bufferBuilder.vertex(matrix, 0.0F, 10.0F, 0.0F)
-					.color(255, 255, 255, 255)
 					.uv(0.0F, barDeltaY)
-					.uv2(0, 1)
+					.color(255, 255, 255, 255)
 					.endVertex();
 				bufferBuilder.vertex(matrix, (float)BAR_LENGTH, 10.0F, 0.0F)
-					.color(255, 255, 255, 255)
 					.uv(1.0F, barDeltaY)
-					.uv2(1, 1)
+					.color(255, 255, 255, 255)
 					.endVertex();
 				bufferBuilder.vertex(matrix, (float)BAR_LENGTH, 0.0F, 0.0F)
-					.color(255, 255, 255, 255)
 					.uv(1.0F, 0.0F)
-					.uv2(1, 0)
+					.color(255, 255, 255, 255)
 					.endVertex();
 				
 				bufferBuilder.end();
@@ -230,37 +223,37 @@ public class FilledVial extends Item {
 			double currentTotal = 0.0;
 			double barLengthScaled = ((double)BAR_LENGTH) / 10.0; //TODO: 10.0 should be a constant (max capacity of vial)
 
-//			for (ConcentratedFluid fluid : fluids) {
-//				Color fluidColor = fluid.fluid.getColor(stack);
-//
-//				Matrix4f matrix = matrices.peek().getModel();
-//
-//				BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-//
-//				double oldTotal = currentTotal;
-//				currentTotal = Math.min(currentTotal + fluid.concentration.doubleValue(), 10.0);
-//				bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
-//				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 0.0F, 0.0F)
-//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-//					.texture((float)(oldTotal / 10.0), barDeltaY)
-//					.next();
-//				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 10.0F, 0.0F)
-//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-//					.texture((float)(oldTotal / 10.0), barDeltaY * 2.0F)
-//					.next();
-//				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 10.0F, 0.0F)
-//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-//					.texture((float)(currentTotal / 10.0), barDeltaY * 2.0F)
-//					.next();
-//				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 0.0F, 0.0F)
-//					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
-//					.texture((float)(currentTotal / 10.0), barDeltaY)
-//					.next();
-//
-//				bufferBuilder.end();
-//				BufferRenderer.draw(bufferBuilder);
-//
-//			}
+			for (ConcentratedFluid fluid : fluids) {
+				Color fluidColor = fluid.fluid.getColor(stack);
+
+				Matrix4f matrix = matrices.last().pose();
+
+				BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
+
+				double oldTotal = currentTotal;
+				currentTotal = Math.min(currentTotal + fluid.concentration.doubleValue(), 10.0);
+				bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 0.0F, 0.0F)
+					.uv((float)(oldTotal / 10.0), barDeltaY)
+					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+					.endVertex();
+				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 10.0F, 0.0F)
+					.uv((float)(oldTotal / 10.0), barDeltaY * 2.0F)
+					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+					.endVertex();
+				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 10.0F, 0.0F)
+					.uv((float)(currentTotal / 10.0), barDeltaY * 2.0F)
+					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+					.endVertex();
+				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 0.0F, 0.0F)
+					.uv((float)(currentTotal / 10.0), barDeltaY)
+					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
+					.endVertex();
+
+				bufferBuilder.end();
+				BufferUploader.end(bufferBuilder);
+
+			}
 			RenderSystem.enableTexture();
 			RenderSystem.disableBlend();
 			RenderSystem.disableColorLogicOp();
@@ -268,6 +261,10 @@ public class FilledVial extends Item {
 		}
 
 		private void drawCircles(int x, int y, PoseStack matrices) {
+			RenderSystem.setShader(GameRenderer::getPositionColorShader);
+			RenderSystem.enableBlend();
+			RenderSystem.disableTexture();
+			RenderSystem.defaultBlendFunc();
 			for (int i = 0; i < fluids.size(); i++) {
 				ConcentratedFluid fluid = fluids.get(i);
 				Color fluidColor = fluid.fluid.getColor(stack);
@@ -283,9 +280,6 @@ public class FilledVial extends Item {
 					Matrix4f matrix = matrices.last().pose();
 
 					BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-					RenderSystem.enableBlend();
-					RenderSystem.disableTexture();
-					RenderSystem.defaultBlendFunc();
 					bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 					bufferBuilder.vertex(matrix, 0.0F, 0.0F, 0.0F).color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255).endVertex();
 					bufferBuilder.vertex(matrix, 0.0F, -6.0F, 0.0F).color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255).endVertex();
@@ -297,8 +291,6 @@ public class FilledVial extends Item {
 					// bufferBuilder.vertex(matrix, -1.0F, 0.0F, 0.0F).color(255, 255, 255, 255).next();
 					bufferBuilder.end();
 					BufferUploader.end(bufferBuilder);
-					RenderSystem.enableTexture();
-					RenderSystem.disableBlend();
 					
 					matrices.translate(14.0, 0.0, 0.0);
 
@@ -307,9 +299,6 @@ public class FilledVial extends Item {
 				Matrix4f matrix = matrices.last().pose();
 
 				BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();
-				RenderSystem.enableBlend();
-				RenderSystem.disableTexture();
-				RenderSystem.defaultBlendFunc();
 				bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 				bufferBuilder.vertex(matrix, 0.0F, 0.0F, 0.0F).color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255).endVertex();
 				bufferBuilder.vertex(matrix, 0.0F, -6.0F, 0.0F).color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255).endVertex();
@@ -322,11 +311,11 @@ public class FilledVial extends Item {
 				// bufferBuilder.vertex(matrix, -1.0F, 0.0F, 0.0F).color(255, 255, 255, 255).next();
 				bufferBuilder.end();
 				BufferUploader.end(bufferBuilder);
-				RenderSystem.enableTexture();
-				RenderSystem.disableBlend();
 
 				matrices.popPose();
 			}
+			RenderSystem.enableTexture();
+			RenderSystem.disableBlend();
 		}
 	}
 }

@@ -76,7 +76,7 @@ public class Crucible extends BaseEntityBlock {
 
 	private InteractionResult useOnEntity(Level world, BlockPos pos, ItemStack itemStack, Player player, InteractionHand hand, CrucibleEntity entity) {
 		
-		int i = entity.getLevel();
+		int i = entity.getWaterLevel();
 		Item item = itemStack.getItem();
 		if (item == Items.WATER_BUCKET && i < entity.maxWaterCapacity) {
 			return useWaterBucket(world, pos, player, hand, entity);

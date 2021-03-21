@@ -43,7 +43,7 @@ import setadokalo.alchemicalbrewing.tooltip.ConvertibleTooltipData;
 @Mixin(Screen.class)
 public class ScreenMixin {
 	
-	@Inject(method = "method_32635", at = @At("HEAD"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+	@Inject(method = "lambda$renderTooltip$0", at = @At("HEAD"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
 	private static void onComponentConstruct(List<ClientTooltipComponent> list, TooltipComponent data, CallbackInfo ci) {
 		if (data instanceof ConvertibleTooltipData) {
 			list.add(((ConvertibleTooltipData) data).getComponent());

@@ -64,7 +64,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	public static final int DEFAULT_COOK_TIME = 80;
 	/** The current number of bottles of water in this crucible. One bucket = 9 bottles, because how TF does
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
-	private int level = 0;
+	private int waterLevel = 0;
 	private ArrayList<ItemStack> allItemsInPot = new ArrayList<>();
 	private ArrayList<CookingItemStack> itemsInPot = new ArrayList<>();
 	private ArrayList<ItemStack> readyItemsInPot = new ArrayList<>();
@@ -96,36 +96,36 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		maxWaterCapacity = 9;
 		maxIngredientCapacity = 32;
 	}
-	public void setLevel(int newLevel) {
-		if (newLevel > level) {
-			this.addLevels(newLevel - level, true);
+	public void setWaterLevel(int newLevel) {
+		if (newLevel > waterLevel) {
+			this.addLevels(newLevel - waterLevel, true);
 		} else {
-			this.removeLevels(level - newLevel, true, true);
+			this.removeLevels(waterLevel - newLevel, true, true);
 		}
 	}
-	public int getLevel() {
-		return level;
+	public int getWaterLevel() {
+		return waterLevel;
 	}
 
 	public int removeLevels(int amount, boolean takeLess, boolean ignorePurity) {
 		int ret = removeLevelsNoEmpty(amount, takeLess, ignorePurity);
-		if (this.level == 0)
+		if (this.waterLevel == 0)
 			this.emptyPot();
 		return ret;
 	}
 	private int removeLevelsNoEmpty(int amount, boolean takeLess, boolean ignorePurity) {
 		if (ignorePurity || this.isPureWater()) {
-			if (amount > level) {
+			if (amount > waterLevel) {
 				if (takeLess) {
-					amount = level;
+					amount = waterLevel;
 				} else {
 					return 0;
 				}
 			}
-			level = level - amount;
+			waterLevel = waterLevel - amount;
 			// the amount of ticks to warm up should be no more than the amount of ticks to warm up this much liquid from scratch
-			ticksToReady = Math.min(ticksToReady, level * 20);
-			this.level.setBlock(this.worldPosition, this.level.getBlockState(this.worldPosition).setValue(Crucible.LEVEL, level), 2);
+			ticksToReady = Math.min(ticksToReady, waterLevel * 20);
+			this.getLevel().setBlock(this.worldPosition, this.getLevel().getBlockState(this.worldPosition).setValue(Crucible.LEVEL, waterLevel), 2);
 			setChanged();
 			return amount;
 		}
@@ -139,7 +139,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	}
 
 	public CompoundTag takeLevels(int amount) {
-		int oldLevel = this.level;
+		int oldLevel = this.waterLevel;
 		if (removeLevelsNoEmpty(amount, false, true) == 0)
 			return null;
 		BigFraction fracToTake = new BigFraction(amount, oldLevel);
@@ -155,17 +155,17 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 
 
 	public int addLevels(int amount, boolean addLess) {
-		if (amount + level > this.maxWaterCapacity) {
+		if (amount + waterLevel > this.maxWaterCapacity) {
 			if (addLess) {
-				amount = this.maxWaterCapacity - level;
+				amount = this.maxWaterCapacity - waterLevel;
 			} else {
 				return 0;
 			}
 		}
 		ticksToReady += 20 * amount;
-		level = level + amount;
+		waterLevel = waterLevel + amount;
 		assert this.level != null;
-		this.level.setBlock(this.worldPosition, this.level.getBlockState(this.worldPosition).setValue(Crucible.LEVEL, level).setValue(Crucible.READY, this.isReady()), 2);
+		this.level.setBlock(this.worldPosition, this.level.getBlockState(this.worldPosition).setValue(Crucible.LEVEL, waterLevel).setValue(Crucible.READY, this.isReady()), 2);
 		setChanged();
 		return amount;
 	}
@@ -193,12 +193,12 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		this.itemsInPot.clear();
 		this.readyItemsInPot.clear();
 		this.fluidsInPot.clear();
-		this.level = 0;
-		this.level.setBlock(this.worldPosition, this.level.getBlockState(this.worldPosition).setValue(Crucible.LEVEL, level), 2);
+		this.waterLevel = 0;
+		this.level.setBlock(this.worldPosition, this.level.getBlockState(this.worldPosition).setValue(Crucible.LEVEL, waterLevel), 2);
 	}
 
 	public boolean isReady() {
-		return level > 0 && ticksToReady == 0;
+		return waterLevel > 0 && ticksToReady == 0;
 	}
 
 	public boolean isPureWater() {
@@ -339,7 +339,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 
 		// Save the current value of the number to the tag
 		tag.putInt("TicksToReady", this.ticksToReady);
-		tag.putInt("Level", this.level);
+		tag.putInt("Level", this.waterLevel);
 		
 		ListTag allTag = new ListTag();
 
@@ -395,7 +395,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	public void load(CompoundTag tag) {
 		super.load(tag);
 		this.ticksToReady = tag.getInt("TicksToReady");
-		this.level = tag.getInt("Level");
+		this.waterLevel = tag.getInt("Level");
 		
 		ListTag NbtList = tag.getList("Items", 10);
 
