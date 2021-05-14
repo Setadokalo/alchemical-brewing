@@ -16,7 +16,7 @@ public final class BigFractionUtil {
 		String str = "";
 		BigInteger whole = num.divide(den);
 		if (!whole.equals(BigInteger.ZERO))
-			str = whole.toString() + " ";
+			str = whole + " ";
 		BigInteger properNum = num.remainder(den);
 		if (!properNum.equals(BigInteger.ZERO))
 			str += properNum + "/" + den;

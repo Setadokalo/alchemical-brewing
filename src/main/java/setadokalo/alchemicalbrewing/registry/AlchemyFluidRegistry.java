@@ -10,7 +10,7 @@ public class AlchemyFluidRegistry {
 	private AlchemyFluidRegistry() {
 	}
 
-	private static HashMap<ResourceLocation, AlchemyFluid> idToFluidEffect = new HashMap<>();
+	private static final HashMap<ResourceLocation, AlchemyFluid> idToFluidEffect = new HashMap<>();
 
 	public static AlchemyFluid register(AlchemyFluid alchemyRecipe) {
 		ResourceLocation id = alchemyRecipe.getIdentifier();
@@ -23,9 +23,7 @@ public class AlchemyFluidRegistry {
 
 	protected static AlchemyFluid update(AlchemyFluid alchemyRecipe) {
 		ResourceLocation id = alchemyRecipe.getIdentifier();
-		if (idToFluidEffect.containsKey(id)) {
-			idToFluidEffect.remove(id);
-		}
+		idToFluidEffect.remove(id);
 		return register(alchemyRecipe);
 	}
 

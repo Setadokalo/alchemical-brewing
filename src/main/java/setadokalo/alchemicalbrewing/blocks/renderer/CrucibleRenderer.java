@@ -17,7 +17,7 @@ import setadokalo.alchemicalbrewing.blocks.tileentity.CrucibleEntity;
 
 @Environment(EnvType.CLIENT)
 public class CrucibleRenderer implements BlockEntityRenderer<CrucibleEntity> {
-	private BlockEntityRendererProvider.Context context;
+	private final BlockEntityRendererProvider.Context context;
 
 	public CrucibleRenderer(BlockEntityRendererProvider.Context dispatcher) {
 		this.context = dispatcher;

@@ -53,7 +53,7 @@ public abstract class MultiJsonDataLoader
 							InputStream inputStream = resource.getInputStream();
 							Reader reader = new BufferedReader(
 								new InputStreamReader(inputStream, StandardCharsets.UTF_8)
-							);
+							)
 						) {
 							parseJson(map, id, reader);
 						} catch (IllegalArgumentException | IOException | JsonParseException var68) {

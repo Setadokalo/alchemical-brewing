@@ -10,7 +10,7 @@ public class AlchemyEffectRegistry {
 
 	private AlchemyEffectRegistry() {}
 
-	private static HashMap<ResourceLocation, FluidEffect> idToFluidEffect = new HashMap<>();
+	private static final HashMap<ResourceLocation, FluidEffect> idToFluidEffect = new HashMap<>();
 
 	public static FluidEffect register(FluidEffect effect) {
 		ResourceLocation id = effect.getIdentifier();
@@ -23,9 +23,7 @@ public class AlchemyEffectRegistry {
 
 	protected static FluidEffect update(FluidEffect effect) {
 		ResourceLocation id = effect.getIdentifier();
-		if (idToFluidEffect.containsKey(id)) {
-			idToFluidEffect.remove(id);
-		}
+		idToFluidEffect.remove(id);
 		return register(effect);
 	}
 

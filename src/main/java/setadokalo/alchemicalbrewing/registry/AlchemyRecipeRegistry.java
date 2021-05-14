@@ -9,22 +9,17 @@ import setadokalo.alchemicalbrewing.recipe.AlchemyRecipe;
 public class AlchemyRecipeRegistry {
 	private AlchemyRecipeRegistry() {}
 
-	private static HashMap<ResourceLocation, AlchemyRecipe> idToAlchemyRecipe = new HashMap<>();
+	private static final HashMap<ResourceLocation, AlchemyRecipe> idToAlchemyRecipe = new HashMap<>();
 
 	public static AlchemyRecipe register(AlchemyRecipe alchemyRecipe) {
 		ResourceLocation id = alchemyRecipe.getIdentifier();
-		// if (idToAlchemyRecipe.containsKey(id)) {
-		// 	throw new IllegalArgumentException("Duplicate alchemyRecipe id tried to register: '" + id.toString() + "'");
-		// }
 		idToAlchemyRecipe.put(id, alchemyRecipe);
 		return alchemyRecipe;
 	}
 
 	protected static AlchemyRecipe update(AlchemyRecipe alchemyRecipe) {
 		ResourceLocation id = alchemyRecipe.getIdentifier();
-		if (idToAlchemyRecipe.containsKey(id)) {
-			idToAlchemyRecipe.remove(id);
-		}
+		idToAlchemyRecipe.remove(id);
 		return register(alchemyRecipe);
 	}
 

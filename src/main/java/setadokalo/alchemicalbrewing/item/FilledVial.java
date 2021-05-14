@@ -154,7 +154,7 @@ public class FilledVial extends Item {
 		@Override
 		public int getHeight() {
 			if (AlchemicalBrewing.config.tooltipMode.equals(TooltipMode.BAR)) {
-				return 12;
+				return 7;
 			} else {
 				return 12 * fluids.size() + 2;
 			}
@@ -203,11 +203,11 @@ public class FilledVial extends Item {
 					.uv(0.0F, 0.0F)
 					.color(255, 255, 255, 255)
 					.endVertex();
-				bufferBuilder.vertex(matrix, 0.0F, 10.0F, 0.0F)
+				bufferBuilder.vertex(matrix, 0.0F, 5.0F, 0.0F)
 					.uv(0.0F, barDeltaY)
 					.color(255, 255, 255, 255)
 					.endVertex();
-				bufferBuilder.vertex(matrix, (float)BAR_LENGTH, 10.0F, 0.0F)
+				bufferBuilder.vertex(matrix, (float)BAR_LENGTH, 5.0F, 0.0F)
 					.uv(1.0F, barDeltaY)
 					.color(255, 255, 255, 255)
 					.endVertex();
@@ -237,11 +237,11 @@ public class FilledVial extends Item {
 					.uv((float)(oldTotal / 10.0), barDeltaY)
 					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
 					.endVertex();
-				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 10.0F, 0.0F)
+				bufferBuilder.vertex(matrix, (float) (oldTotal * barLengthScaled), 5.0F, 0.0F)
 					.uv((float)(oldTotal / 10.0), barDeltaY * 2.0F)
 					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
 					.endVertex();
-				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 10.0F, 0.0F)
+				bufferBuilder.vertex(matrix, (float) (currentTotal * barLengthScaled), 5.0F, 0.0F)
 					.uv((float)(currentTotal / 10.0), barDeltaY * 2.0F)
 					.color(fluidColor.getRed(), fluidColor.getGreen(), fluidColor.getBlue(), 255)
 					.endVertex();

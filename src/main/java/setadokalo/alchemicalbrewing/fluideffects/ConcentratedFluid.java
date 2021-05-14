@@ -92,7 +92,7 @@ public class ConcentratedFluid {
 
 	public void applyEffects(Level world, LivingEntity user) {
 		for (FluidEffect effect : this.fluid.getEffects())
-			effect.applyEffect(world, user, this.concentration);
+			effect.applyDrinkEffect(world, user, this.concentration);
 	}
 	public Color getColor(@Nullable ItemStack stack) {
 		return this.fluid.getColor(stack);

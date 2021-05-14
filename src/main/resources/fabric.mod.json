@@ -21,8 +21,9 @@
     "alchemical-brewing.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.10.6+build.214",
+    "fabricloader": ">=0.11.3",
     "fabric": "*",
-    "minecraft": "*"
+    "minecraft": "1.17.x",
+    "java": ">=16"
   }
 }

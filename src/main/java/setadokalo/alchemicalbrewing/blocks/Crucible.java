@@ -101,7 +101,7 @@ public class Crucible extends BaseEntityBlock {
 			}
 
 			entity.addLevels(1, true);
-			world.playSound((Player)null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+			world.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
 		}
 
 		return InteractionResult.sidedSuccess(world.isClientSide);
@@ -114,7 +114,7 @@ public class Crucible extends BaseEntityBlock {
 			}
 
 			entity.addLevels(9, true);
-			world.playSound((Player) null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F,
+			world.playSound(null, pos, SoundEvents.BUCKET_EMPTY, SoundSource.BLOCKS, 1.0F,
 					1.0F);
 		}
 
@@ -149,7 +149,7 @@ public class Crucible extends BaseEntityBlock {
 					player.drop(emptyVial, false);
 				}
 			}
-			world.playSound((Player)null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+			world.playSound(null, pos, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
 			return InteractionResult.sidedSuccess(true);
 		}
 		return InteractionResult.sidedSuccess(false);
@@ -168,7 +168,7 @@ public class Crucible extends BaseEntityBlock {
 			} else if (!player.getInventory().add(newPotion)) {
 				player.drop(newPotion, false);
 			}
-			world.playSound((Player)null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+			world.playSound(null, pos, SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
 		}
 
 		return InteractionResult.sidedSuccess(world.isClientSide);
@@ -186,7 +186,7 @@ public class Crucible extends BaseEntityBlock {
 				}
 			}
 			entity.removeLevels(9, true, false);
-			world.playSound((Player)null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+			world.playSound(null, pos, SoundEvents.BUCKET_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
 		}
 
 		return InteractionResult.sidedSuccess(world.isClientSide);

@@ -2,6 +2,7 @@ package setadokalo.alchemicalbrewing.blocks.tileentity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.math3.fraction.BigFraction;
 import org.apache.logging.log4j.Level;
@@ -13,12 +14,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.blocks.Crucible;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
@@ -44,7 +44,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		}
 
 		public CompoundTag writeNbt(CompoundTag iTag) {
-			iTag = itemStack.save(iTag);
+			itemStack.save(iTag);
 			iTag.putInt(REMAINING_TAG, cookTimeRemaining);
 			return iTag;
 		}
@@ -65,10 +65,10 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	/** The current number of bottles of water in this crucible. One bucket = 9 bottles, because how TF does
 	  * one bottle contain a *third of a cubic meter* of water, Mojang? */
 	private int waterLevel = 0;
-	private ArrayList<ItemStack> allItemsInPot = new ArrayList<>();
-	private ArrayList<CookingItemStack> itemsInPot = new ArrayList<>();
-	private ArrayList<ItemStack> readyItemsInPot = new ArrayList<>();
-	private ArrayList<ConcentratedFluid> fluidsInPot = new ArrayList<>();
+	private final ArrayList<ItemStack> allItemsInPot = new ArrayList<>();
+	private final ArrayList<CookingItemStack> itemsInPot = new ArrayList<>();
+	private final ArrayList<ItemStack> readyItemsInPot = new ArrayList<>();
+	private final ArrayList<ConcentratedFluid> fluidsInPot = new ArrayList<>();
 
 	void add(ItemStack stack) {
 		add(new CookingItemStack(stack, DEFAULT_COOK_TIME));
@@ -96,17 +96,18 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		maxWaterCapacity = 9;
 		maxIngredientCapacity = 32;
 	}
-	public void setWaterLevel(int newLevel) {
-		if (newLevel > waterLevel) {
-			this.addLevels(newLevel - waterLevel, true);
-		} else {
-			this.removeLevels(waterLevel - newLevel, true, true);
-		}
-	}
+
 	public int getWaterLevel() {
 		return waterLevel;
 	}
 
+	/**
+	 * Remove some number of water levels from the pot.
+	 * @param amount the amount of water levels the pot should take
+	 * @param takeLess if the pot should take less than the requested amount if it doesn't have the full requested amount
+	 * @param ignorePurity if the pot should only take water from the pot if it's pure (without any effects in it) or not
+	 * @return the amount of water levels actually taken from the pot
+	 */
 	public int removeLevels(int amount, boolean takeLess, boolean ignorePurity) {
 		int ret = removeLevelsNoEmpty(amount, takeLess, ignorePurity);
 		if (this.waterLevel == 0)
@@ -125,7 +126,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 			waterLevel = waterLevel - amount;
 			// the amount of ticks to warm up should be no more than the amount of ticks to warm up this much liquid from scratch
 			ticksToReady = Math.min(ticksToReady, waterLevel * 20);
-			this.getLevel().setBlock(this.worldPosition, this.getLevel().getBlockState(this.worldPosition).setValue(Crucible.LEVEL, waterLevel), 2);
+			Objects.requireNonNull(this.getLevel()).setBlock(this.worldPosition, this.getLevel().getBlockState(this.worldPosition).setValue(Crucible.LEVEL, waterLevel), 2);
 			setChanged();
 			return amount;
 		}
@@ -182,7 +183,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 			} else {
 				this.add(stack);
 			}
-			AlchemicalBrewing.log(Level.INFO, "Added item " + Registry.ITEM.getKey(stack.getItem()).toString() + " to pot");
+			AlchemicalBrewing.log(Level.INFO, "Added item " + Registry.ITEM.getKey(stack.getItem()) + " to pot");
 			setChanged();
 			return true;
 		}
@@ -194,7 +195,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		this.readyItemsInPot.clear();
 		this.fluidsInPot.clear();
 		this.waterLevel = 0;
-		this.level.setBlock(this.worldPosition, this.level.getBlockState(this.worldPosition).setValue(Crucible.LEVEL, waterLevel), 2);
+		Objects.requireNonNull(this.getLevel()).setBlock(this.worldPosition, this.getLevel().getBlockState(this.worldPosition).setValue(Crucible.LEVEL, waterLevel), 2);
 	}
 
 	public boolean isReady() {
@@ -224,10 +225,9 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 
 	public static void tick(BlockEntity uEntity) {
 		if (uEntity.getLevel() != null && !uEntity.getLevel().isClientSide) {
-			if (!(uEntity instanceof CrucibleEntity)) {
+			if (!(uEntity instanceof CrucibleEntity entity)) {
 				return;
 			}
-			CrucibleEntity entity = (CrucibleEntity) uEntity;
 			if (entity.tickToReady()) {
 				entity.tickItems();
 			}
@@ -254,28 +254,29 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 
 	//TODO: There's probably a more efficient way to do this
 	protected void tryAllRecipes() {
-		boolean didRecipe = false;
+		var didRecipe = false;
 		// for each recipe, try performing the recipe (as many times as possible with the ingredients in the pot)
 		for (AlchemyRecipe recipe: AlchemyRecipeRegistry.values()) {
 			while (tryPerformRecipe(recipe)) {
 				didRecipe = true;
 				AlchemicalBrewing.log(Level.INFO, "performed recipe " + recipe);
-				MutableComponent textToSend = new TranslatableComponent("message.alchemicalbrewing.recipefinished");
+				var textToSend = new TranslatableComponent("message.alchemicalbrewing.recipefinished");
 				String[] translationKeyFragments = recipe.getIdentifier().toString().split(":");
 				String transKey = translationKeyFragments[0] + "." + translationKeyFragments[1];
 				textToSend.append(new TranslatableComponent("recipe." + transKey));
-				for (Player player : this.getLevel().players()) {
+				for (var player : Objects.requireNonNull(this.getLevel()).players()) {
 					
 					player.displayClientMessage(textToSend, false);
 				}
 			}
 		}
 		if (didRecipe) {
-			this.level.setBlock(this.worldPosition, this.level.getBlockState(this.worldPosition), 2);
+			this.getLevel().setBlock(this.worldPosition, this.getLevel().getBlockState(this.worldPosition), 2);
 			setChanged();
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	protected boolean tryPerformRecipe(AlchemyRecipe recipe) {
 		List<ItemStack> list = (List<ItemStack>) this.readyItemsInPot.clone();
 		List<ItemStack> foundItems = new ArrayList<>();
@@ -296,15 +297,6 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	}
 
 	public void addFluidToPot(ConcentratedFluid fluidToAdd) {
-		// BigFraction totalConcentration = BigFraction.ZERO;
-		// for (ConcentratedFluid fluidInPot: this.fluidsInPot) {
-		// 	totalConcentration = totalConcentration.add(fluidInPot.concentration);
-		// }
-		// if ((totalConcentration.add(fluidToAdd.concentration).compareTo(new BigFraction(10 * this.level, 1))) > 0) {
-		// 	fluidToAdd.concentration = new BigFraction(10 * this.level, 1).subtract(totalConcentration);
-		// 	if (fluidToAdd.concentration.compareTo(BigFraction.ZERO) <= 0)
-		// 		return;
-		// }
 		boolean resultFoundInPot = false;
 		for (ConcentratedFluid fluidInPot : this.fluidsInPot) {
 			if (fluidInPot.fluid == fluidToAdd.fluid) {
@@ -334,7 +326,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 
 	@Override
 	// Serialize the BlockEntity
-	public CompoundTag save(CompoundTag tag) {
+	public CompoundTag save(@NotNull CompoundTag tag) {
 		tag = super.save(tag);
 
 		// Save the current value of the number to the tag
@@ -343,8 +335,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		
 		ListTag allTag = new ListTag();
 
-		for(int i = 0; i < this.allItemsInPot.size(); ++i) {
-			ItemStack item = this.allItemsInPot.get(i);
+		for (ItemStack item : this.allItemsInPot) {
 			CompoundTag NbtCompound = item.save(new CompoundTag());
 			allTag.add(NbtCompound);
 		}
@@ -355,8 +346,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 
 		ListTag NbtList = new ListTag();
 
-		for(int i = 0; i < this.itemsInPot.size(); ++i) {
-			CookingItemStack cookingItem = this.itemsInPot.get(i);
+		for (CookingItemStack cookingItem : this.itemsInPot) {
 			CompoundTag NbtCompound = cookingItem.writeNbt(new CompoundTag());
 			NbtList.add(NbtCompound);
 		}
@@ -366,8 +356,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		}
 		ListTag readyTag = new ListTag();
 
-		for(int i = 0; i < this.readyItemsInPot.size(); ++i) {
-			ItemStack cookingItem = this.readyItemsInPot.get(i);
+		for (ItemStack cookingItem : this.readyItemsInPot) {
 			CompoundTag NbtCompound = cookingItem.save(new CompoundTag());
 			readyTag.add(NbtCompound);
 		}
@@ -377,8 +366,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		}
 		ListTag fluidsTag = new ListTag();
 
-		for(int i = 0; i < this.fluidsInPot.size(); ++i) {
-			ConcentratedFluid fluid = this.fluidsInPot.get(i);
+		for (ConcentratedFluid fluid : this.fluidsInPot) {
 			CompoundTag NbtCompound = fluid.writeNbt(new CompoundTag());
 			fluidsTag.add(NbtCompound);
 		}
@@ -392,7 +380,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 	
 	// Deserialize the BlockEntity
 	@Override
-	public void load(CompoundTag tag) {
+	public void load(@NotNull CompoundTag tag) {
 		super.load(tag);
 		this.ticksToReady = tag.getInt("TicksToReady");
 		this.waterLevel = tag.getInt("Level");
@@ -425,6 +413,7 @@ public class CrucibleEntity extends BlockEntity implements BlockEntityClientSeri
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public List<ConcentratedFluid> getEffects() {
 		return (List<ConcentratedFluid>) this.fluidsInPot.clone();
 	}

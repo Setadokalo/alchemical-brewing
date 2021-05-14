@@ -29,5 +29,5 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
 public interface ConvertibleTooltipData extends TooltipComponent {
 	
-	public ClientTooltipComponent getComponent();
+	ClientTooltipComponent getComponent();
 }
