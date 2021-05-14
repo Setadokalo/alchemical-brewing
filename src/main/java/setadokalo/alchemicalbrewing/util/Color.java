@@ -4,6 +4,8 @@ package setadokalo.alchemicalbrewing.util;
    And I want my color class to actually, you know, be useful. Like, at all.
 */
 
+import org.jetbrains.annotations.Contract;
+
 public final class Color {
 	public static final Color WHITE = new Color(1.000, 1.000, 1.000);
 	public static final Color BLACK = new Color(0.000, 0.000, 0.000);
@@ -88,5 +90,13 @@ public final class Color {
 	}
 	public int getBlue() {
 		return (int)Math.round(b * 255);
+	}
+
+
+
+	@Contract(pure = true)
+	public static int sinU8(double input) {
+		var val = (int) (Math.sin(input) * 128);
+		return val + 128;
 	}
 }

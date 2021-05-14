@@ -15,7 +15,7 @@ public class Stew extends AlchemyFluid {
 	private List<FluidEffect> lazyEffects = null;
 	
 	public Stew(ResourceLocation identifier) {
-		type = EffectType.POSITIVE;
+		type = EffectType.POSITIVE.INSTANCE;
 		this.identifier = identifier;
 	}
 	@Override

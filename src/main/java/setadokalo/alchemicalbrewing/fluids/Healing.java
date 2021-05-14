@@ -14,7 +14,7 @@ public class Healing extends AlchemyFluid {
 	@Nullable
 	private List<FluidEffect> lazyEffects = null;
 	public Healing(ResourceLocation identifier) {
-		type = EffectType.POSITIVE;
+		type = EffectType.RAINBOW.INSTANCE_1SEC;
 		this.identifier = identifier;
 	}
 
@@ -30,6 +30,10 @@ public class Healing extends AlchemyFluid {
 
 	@Override
 	public Color getColor(@Nullable ItemStack stack) {
-		return Color.RED;
+		var curTime = ((double)System.currentTimeMillis()) / 1000.0;
+		return new Color(Color.sinU8(curTime),
+			Color.sinU8(curTime + Math.PI * 2.0/3.0),
+			Color.sinU8(curTime + Math.PI * 4.0/3.0)
+		);
 	}
 }

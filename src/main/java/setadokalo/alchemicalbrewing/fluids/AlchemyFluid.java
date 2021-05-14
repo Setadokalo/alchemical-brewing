@@ -35,14 +35,14 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 	public Component getTooltip(String concentration) {
 		if (this.partialtranslationKey == null)
 			generateTranslationKey();
-		return new TranslatableComponent("tooltip." + this.partialtranslationKey, concentration).withStyle(this.type.getFormatting());
+		return this.type.format(new TranslatableComponent("tooltip." + this.partialtranslationKey, concentration));
 	}
 
 	@Nullable
 	public Component getName() {
 		if (this.partialtranslationKey == null)
 			generateTranslationKey();
-		return new TranslatableComponent("name." + this.partialtranslationKey).withStyle(this.type.getFormatting());
+		return this.type.format(new TranslatableComponent("name." + this.partialtranslationKey));
 	}
 
 	/**
@@ -57,7 +57,9 @@ public abstract class AlchemyFluid implements FluidEffectProvider {
 
 	@Override
 	public EffectType getEffectType() {
-		return EffectType.NONE;
+		if (type == null)
+			type = EffectType.NONE.INSTANCE;
+		return type;
 	}
 
 	public ResourceLocation getIdentifier() {
