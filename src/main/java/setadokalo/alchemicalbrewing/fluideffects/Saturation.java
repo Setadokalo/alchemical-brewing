@@ -36,8 +36,8 @@ public class Saturation extends SplashyFluidEffect {
 
 	@Override
 	public void applyDrinkEffect(Level world, LivingEntity entity, BigFraction fConcentration) {
-		if (entity instanceof Player) {
-			((Player)entity).getFoodData().eat(fConcentration.multiply(hungerFactor).intValue(), saturationModifier);
+		if (entity instanceof Player player) {
+			player.getFoodData().eat(fConcentration.multiply(hungerFactor).intValue(), saturationModifier);
 		}
 	}
 

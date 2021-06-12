@@ -56,8 +56,8 @@ public abstract class FluidEffect {
 
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof FluidEffect) {
-			return (((FluidEffect)object).identifier.equals(this.identifier));
+		if (object instanceof FluidEffect fEffect) {
+			return fEffect.identifier.equals(this.identifier);
 		}
 		return false;
 	}

@@ -45,8 +45,8 @@ public class ScreenMixin {
 	
 	@Inject(method = "lambda$renderTooltip$0", at = @At("HEAD"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
 	private static void onComponentConstruct(List<ClientTooltipComponent> list, TooltipComponent data, CallbackInfo ci) {
-		if (data instanceof ConvertibleTooltipData) {
-			list.add(((ConvertibleTooltipData) data).getComponent());
+		if (data instanceof ConvertibleTooltipData ttData) {
+			list.add(ttData.getComponent());
 			ci.cancel();
 		}
 	}

@@ -14,6 +14,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
 import net.minecraft.client.renderer.GameRenderer;
 import org.apache.commons.math3.fraction.BigFraction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.api.EnvType;
@@ -21,7 +22,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.nbt.CompoundTag;
@@ -36,16 +36,16 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import setadokalo.alchemicalbrewing.AlchemicalBrewing;
 import setadokalo.alchemicalbrewing.config.ABConfig.TooltipMode;
 import setadokalo.alchemicalbrewing.fluideffects.ConcentratedFluid;
-import setadokalo.alchemicalbrewing.item.FilledVial.VialTooltip;
 import setadokalo.alchemicalbrewing.tooltip.ConvertibleTooltipData;
 import setadokalo.alchemicalbrewing.util.Color;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 public class FilledVial extends Item {
 
@@ -54,17 +54,18 @@ public class FilledVial extends Item {
 	}
 
 	@Override
-	public UseAnim getUseAnimation(ItemStack stack) {
+	public UseAnim getUseAnimation(@NotNull ItemStack stack) {
 		return UseAnim.DRINK;
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack) {
+	public int getUseDuration(@NotNull ItemStack stack) {
 		return 32;
 	}
 
 	@Override
 	@Environment(EnvType.CLIENT)
+	@ParametersAreNonnullByDefault
 	public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
 		List<ConcentratedFluid> effects = getFluids(stack);
 		BigFraction total = BigFraction.ZERO;
@@ -79,6 +80,7 @@ public class FilledVial extends Item {
 	}
 
 	@Override
+	@ParametersAreNonnullByDefault
 	public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
 		if (user.canEat(true)) {
 			user.startUsingItem(hand);
@@ -89,11 +91,11 @@ public class FilledVial extends Item {
 	}
 
 	@Override
-	public ItemStack finishUsingItem(ItemStack stack, Level world, LivingEntity user) {
+	public ItemStack finishUsingItem(@NotNull ItemStack stack, Level world, @NotNull LivingEntity user) {
 		List<ConcentratedFluid> effects = getFluids(stack);
-		if (!world.isClientSide && user instanceof Player && !((Player) user).getAbilities().instabuild) {
+		if (!world.isClientSide && user instanceof Player player && !player.getAbilities().instabuild) {
 			stack.shrink(1);
-			((Player) user).addItem(new ItemStack(ABItems.VIAL, 1));
+			player.addItem(new ItemStack(ABItems.VIAL, 1));
 		}
 
 		for (ConcentratedFluid cEffect : effects) {
@@ -137,9 +139,8 @@ public class FilledVial extends Item {
 	}
 
 	@Override
-	public Optional<TooltipComponent> getTooltipImage(ItemStack stack) {
+	public Optional<TooltipComponent> getTooltipImage(@NotNull ItemStack stack) {
 		return Optional.of(new VialTooltip(stack));
-		
 	}
 
 	static class VialTooltip implements ConvertibleTooltipData, ClientTooltipComponent {
